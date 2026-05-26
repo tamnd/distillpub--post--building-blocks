@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<head>
+<meta charset="utf-8"/>
+<meta content="width=1024" name="viewport"/>
+<script src="template.v2.js"></script>
+<style>
+    body {
+      --gray-bg: hsl(0, 0%, 97%);
+      --gray-border: rgba(0, 0, 0, 0.1);
+      --border-radius: 5px;
+    }
+
+    d-title {
+      contain: unset;
+      padding-bottom: 0;
+    }
+
+    d-title h1, d-title p {
+      grid-column: page;
+    }
+
+    d-figure {
+      margin: 20px 0 40px;
+    }
+
+    d-slider {
+      width: 100%;
+    }
+
+    @media (max-width: 1280px) {
+      d-title br.conditional {
+        display: none;
+      }
+    }
+
+    #Teaser {
+      margin-top: 0;
+      margin-bottom: 0;
+      background: var(--gray-bg);
+      border-top: 1px solid var(--gray-border);
+      min-height: 100px;
+    }
+
+    figure.full-width {
+      grid-column: screen;
+    }
+
+    #AttributionSpatial {
+      background: var(--gray-bg);
+      padding: 20px 0;
+      border-top: 1px solid var(--gray-border);
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    #AttributionChannel, #ActivationGroups, #AttributionGroups {
+      background: var(--gray-bg);
+      padding-top: 20px;
+      padding-bottom: 20px;
+      border-top: 1px solid var(--gray-border);
+      border-bottom: 1px solid var(--gray-border);
+    }
+
+    #ActivationGroups {
+      display: block;
+    }
+    
+    .attribution_list {
+      display: inline-block;
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .attribution_list li {
+      position: relative;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      grid-column-gap: 10px;
+      margin-bottom: 0;
+      text-transform: capitalize;
+      width: 100%;
+    }
+
+    .attribution_list li span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .attribution_list .scent {
+      display: flex;
+      position: relative;
+      align-items: center;
+    }
+
+    .attribution_list .scent div {
+      left: 0;
+      background: #ccc;
+      height: 10px;
+    }
+
+    .red { color: #c82829; border-color: #c82829 }
+    .orange { color: #f5871f; border-color: #f5871f }
+    .yellow { color: #eab700; border-color: #eab700 }
+    .green { color: #718c00; border-color: #718c00 }
+    .aqua { color: #3e999f; border-color: #3e999f }
+    .blue { color: #4271ae; border-color: #4271ae }
+    .purple { color: #8959a8; border-color: #8959a8 }
+
+
+
+    /* Heights for progressively loaded graphics */
+    @media (min-width: 1000px) {
+      #Teaser {
+        /* min-height: 660px; */
+      }
+
+      #AttributionChannel {
+        min-height: 608px;
+      }
+
+      #AllActivationGrids {
+        min-height: 250px;
+      }
+
+      #AllActivationGridsMagnitude {
+        min-height: 250px;
+      }
+
+      #AttributionSpatial {
+        min-height: 500px;
+      }
+
+      #ActivationGroups {
+        min-height: 800px;
+      }
+
+      #AttributionGroups{
+        min-height: 722px;
+      }
+    }
+
+
+  </style>
+<link href="thumbnail.jpg" rel="icon"/></head>
+<body>
+<d-front-matter>
+<script type="text/json">{
+  "title": "Những Viên Gạch Nền Tảng của Khả Năng Diễn Giải",
+  "description": "Các kỹ thuật diễn giải thường được nghiên cứu tách rời. Chúng tôi khám phá những giao diện mạnh mẽ xuất hiện khi kết hợp chúng và cấu trúc phong phú của không gian tổ hợp này.",
+  "authors": [
+    {
+      "author": "Chris Olah",
+      "authorURL": "https://colah.github.io/",
+      "affiliation": "Google Brain",
+      "affiliationURL": "https://g.co/brain"
+    },
+    {
+      "author": "Arvind Satyanarayan",
+      "authorURL": "http://arvindsatya.com",
+      "affiliation": "Google Brain",
+      "affiliationURL": "https://g.co/brain"
+    },
+    {
+      "author": "Ian Johnson",
+      "authorURL": "https://github.com/enjalot",
+      "affiliation": "Google Cloud",
+      "affiliationURL": "http://cloud.google.com/"
+    },
+    {
+      "author": "Shan Carter",
+      "authorURL": "http://shancarter.com/",
+      "affiliation": "Google Brain",
+      "affiliationURL": "https://g.co/brain"
+    },
+    {
+      "author": "Ludwig Schubert",
+      "authorURL": "https://schubert.io/",
+      "affiliation": "Google Brain",
+      "affiliationURL": "https://g.co/brain"
+    },
+    {
+      "author": "Katherine Ye",
+      "authorURL": "https://cs.cmu.edu/~kqy/",
+      "affiliation": "CMU",
+      "affiliationURL": "https://cs.cmu.edu/"
+    },
+    {
+      "author": "Alexander Mordvintsev",
+      "authorURL": "https://znah.net/",
+      "affiliation": "Google Research",
+      "affiliationURL": "https://research.google.com/"
+    }
+  ]
+  }</script>
+</d-front-matter>
+<d-title>
+<h1>Những Viên Gạch Nền Tảng của Khả Năng Diễn Giải</h1>
+<!-- <p>Developing a Grammar of Interfaces for Understanding Neural Networks</p> -->
+<p style="font-size: 1.4rem; margin-bottom: 40px;">Các kỹ thuật diễn giải thường được nghiên cứu tách rời. Chúng tôi khám phá những giao diện mạnh mẽ xuất hiện khi kết hợp chúng, cùng cấu trúc phong phú của không gian tổ hợp này.</p>
+<div id="StickyPicker" style="grid-column: screen;"></div>
+<d-figure id="Teaser" style="grid-column: screen;"></d-figure>
+</d-title>
+<d-article>
+<p>Khi mạng nơ-ron ngày càng thành công, nhu cầu giải thích các quyết định của chúng cũng tăng theo: để xây dựng niềm tin về cách chúng sẽ hành xử trong thế giới thực, phát hiện thiên lệch của mô hình, và phục vụ tò mò khoa học. Để làm được điều đó, ta cần vừa xây dựng các trừu tượng sâu, vừa hiện thực hóa chúng trong những giao diện giàu thông tin. Ngoại trừ một vài trường hợp, các nghiên cứu hiện có về diễn giải thường chưa làm tốt hai việc này cùng lúc.</p>
+<p>Cộng đồng học máy chủ yếu tập trung phát triển các phương pháp mạnh như trực quan hóa đặc trưng, quy thuộc và giảm chiều để suy luận về mạng nơ-ron. Tuy nhiên, các kỹ thuật này thường được nghiên cứu như những nhánh riêng lẻ, còn công việc hiện thực hóa chúng thành giao diện lại bị xem nhẹ. Ngược lại, cộng đồng tương tác người-máy đã bắt đầu khám phá các giao diện người dùng phong phú cho mạng nơ-ron, nhưng chưa gắn kết sâu với các trừu tượng này. Khi các trừu tượng đó được dùng, chúng thường xuất hiện ở dạng khá chuẩn tắc và rời rạc.</p>
+<p>Trong bài viết này, chúng tôi xem các phương pháp diễn giải hiện có như những khối nền tảng có thể ghép lại để tạo thành giao diện phong phú. Chúng tôi nhận thấy các kỹ thuật tưởng như rời rạc này có thể đi vào một ngữ pháp thống nhất, giữ những vai trò bổ sung cho nhau trong các giao diện kết quả. Hơn nữa, ngữ pháp này cho phép ta khảo sát có hệ thống không gian giao diện diễn giải và đánh giá liệu chúng có đáp ứng các mục tiêu cụ thể hay không. Chúng tôi sẽ trình bày các giao diện cho thấy mạng phát hiện điều gì và giải thích cách nó phát triển sự hiểu biết, trong khi vẫn giữ lượng thông tin ở quy mô con người.</p>
+<figcaption class="l-gutter">Các giao diện của chúng tôi mang tính thăm dò, nên có thể có người hỏi chúng đáng tin đến đâu. Thay vì trả lời rời rạc từng chỗ, chúng tôi dành một phần riêng ở cuối bài để bàn về điểm này.</figcaption>
+<p>Trong bài viết này, chúng tôi dùng GoogLeNet, một mô hình phân loại ảnh, để minh họa ý tưởng giao diện vì các nơ-ron của nó có vẻ mang ý nghĩa ngữ nghĩa một cách khác thường. Chúng tôi đang tích cực tìm hiểu lý do và hy vọng tìm ra các nguyên lý thiết kế mô hình dễ diễn giải. Trong lúc đó, dù các kỹ thuật được minh họa trên GoogLeNet, chúng tôi cung cấp mã để bạn thử trên các mô hình khác. Dù ở đây chúng tôi chọn một nhiệm vụ và một mạng cụ thể, các trừu tượng và mẫu kết hợp mà bài viết trình bày có thể áp dụng cho mạng nơ-ron trong những miền khác.</p>
+<h2>Hiểu các tầng ẩn</h2>
+<p>Nhiều nghiên cứu gần đây về diễn giải tập trung vào tầng đầu vào và tầng đầu ra của mạng nơ-ron. Có thể nói trọng tâm này đến từ ý nghĩa rõ ràng của các tầng đó: trong thị giác máy tính, tầng đầu vào biểu diễn giá trị các kênh màu đỏ, xanh lá và xanh dương cho từng pixel trong ảnh, còn tầng đầu ra gồm nhãn lớp và xác suất tương ứng.</p>
+<p>Tuy nhiên, sức mạnh của mạng nơ-ron nằm ở các tầng ẩn: tại mỗi tầng, mạng khám phá một biểu diễn mới của đầu vào. Trong thị giác máy tính, ta dùng các mạng nơ-ron chạy cùng các bộ phát hiện đặc trưng tại mọi vị trí trong ảnh. Ta có thể hình dung biểu diễn đã học của mỗi tầng như một khối lập phương ba chiều. Mỗi ô trong khối là một activation, tức mức độ một nơ-ron kích hoạt. Trục x và y tương ứng với vị trí trong ảnh, còn trục z là channel, hay bộ phát hiện đang được chạy.</p>
+<figure class="l-body" id="ActivationCube">
+<div id="CubeNatural" style="margin-bottom: 15px;"></div>
+<figcaption>Khối activation mà một mạng nơ-ron thị giác máy tính tạo ra tại mỗi tầng ẩn. Các lát cắt khác nhau của khối cho phép ta nhắm vào activation của từng nơ-ron, từng vị trí không gian, hoặc từng channel.</figcaption>
+</figure>
+<figure class="base-grid" id="SemanticDict"></figure>
+<p>Để tạo một từ điển ngữ nghĩa, ta ghép mỗi activation của nơ-ron với một trực quan hóa của nơ-ron đó, rồi sắp xếp chúng theo độ lớn activation. Sự kết hợp giữa activation và trực quan hóa đặc trưng thay đổi cách ta tương tác với đối tượng toán học bên dưới. Activation giờ được ánh xạ sang các biểu tượng có tính hình ảnh thay vì các chỉ số trừu tượng; nhiều biểu tượng dường như tương ứng với các ý niệm nổi bật của con người như “tai mềm”, “mõm chó” hay “lông”.</p>
+<figcaption class="l-gutter">Chúng tôi dùng trực quan hóa đặc trưng dựa trên tối ưu hóa để tránh tương quan giả, nhưng cũng có thể dùng các phương pháp khác.</figcaption>
+<p>Từ điển ngữ nghĩa mạnh không chỉ vì chúng rời khỏi các chỉ số vô nghĩa, mà còn vì chúng biểu đạt những trừu tượng mà mạng đã học bằng các ví dụ điển hình. Với phân loại ảnh, mạng nơ-ron học một tập trừu tượng thị giác, do đó ảnh là ký hiệu tự nhiên nhất để biểu diễn chúng. Nếu làm việc với âm thanh, ký hiệu tự nhiên hơn nhiều khả năng là các đoạn âm thanh. Điều này quan trọng vì khi nơ-ron có vẻ tương ứng với ý niệm của con người, ta rất dễ thu gọn chúng thành từ ngữ. Nhưng làm vậy là một phép nén mất mát, ngay cả với những trừu tượng quen thuộc.</p>
+<p>Bằng cách đưa ý nghĩa vào các tầng ẩn, từ điển ngữ nghĩa đặt nền để các kỹ thuật diễn giải hiện có trở thành các khối nền tảng có thể ghép nối. Như ta sẽ thấy, giống như các vector bên dưới, ta có thể áp dụng giảm chiều lên chúng. Trong các trường hợp khác, từ điển ngữ nghĩa cho phép ta đẩy các kỹ thuật này xa hơn. Chẳng hạn, ngoài quy thuộc một chiều mà ta thường thực hiện giữa tầng đầu vào và đầu ra, từ điển ngữ nghĩa cho phép quy thuộc đến và từ các tầng ẩn cụ thể.</p>
+<figcaption class="l-gutter">Dù chúng tôi giới thiệu từ điển ngữ nghĩa qua nơ-ron, chúng có thể được dùng với bất kỳ cơ sở activation nào. Ta sẽ quay lại điểm này ở phần sau.</figcaption>
+<h2 id="what-does-the-network-see">Mạng nhìn thấy gì?</h2>
+<figure class="base-grid" id="ActivationVecVis" style="margin-top: 0;"></figure>
+<p>Áp dụng kỹ thuật này cho tất cả vector activation cho phép ta không chỉ thấy mạng phát hiện gì tại từng vị trí, mà còn thấy mạng hiểu toàn bộ ảnh đầu vào như thế nào.</p>
+<figure id="ActivationGridSingle" style="grid-column: text;"></figure>
+<p>Và bằng cách làm việc xuyên qua nhiều tầng, ví dụ “mixed3a” và “mixed4d”, ta có thể quan sát cách sự hiểu biết của mạng tiến hóa: từ việc phát hiện cạnh ở các tầng sớm đến các hình dạng và bộ phận đối tượng tinh vi hơn ở các tầng sau.</p>
+<figure class="act-grids full-width" id="AllActivationGrids"></figure>
+<p>Tuy nhiên, các trực quan hóa này bỏ sót một mảnh thông tin then chốt: độ lớn của activation. Bằng cách co giãn diện tích mỗi ô theo độ lớn của vector activation, ta có thể biểu thị mạng đã phát hiện đặc trưng ở vị trí đó mạnh đến mức nào:</p>
+<figure class="act-grids full-width" id="AllActivationGridsMagnitude"></figure>
+<!--
+  <p>
+    Traditional dimensionality reduction techniques, such as principal component analysis, give us another way to understand what the network is detecting.
+    For instance, to get an "overview" of the activation vectors, we can compute the first three principal components of the activations and color the image based on them.
+  </p>
+
+  <p>
+    These principle components are also directions in activation space and, thus, have meaning by themselves.
+    Using feature visualization, we can inspect what each of the components represents.
+  </p>
+
+  <figure class="l-page">
+    <img src="images/activation-pca.png"></img>
+  </figure>
+
+  <p>
+    In the end, a network's activations can be presented as semantic dictionaries with different bases.
+    There are three particularly natural ones to consider: what an activation vector represents as a whole, the vector in terms of some dimensionality reduction, and finally the individual neurons themselves.
+    Note, these all (approximately) describe the same object!
+  </p>
+
+  <figure id="FullVectorEq" class="l-page">
+    <img src="images/vector-eq-full.png"  style="width:100%"></img>
+  </figure> -->
+<h2>Các khái niệm được lắp ghép như thế nào?</h2>
+<p>Trực quan hóa đặc trưng giúp ta trả lời mạng phát hiện gì, nhưng không trả lời mạng lắp ghép các mảnh riêng lẻ đó như thế nào để đi đến các quyết định về sau, hoặc vì sao các quyết định đó được đưa ra.</p>
+<p>Quy thuộc là một tập kỹ thuật trả lời những câu hỏi như vậy bằng cách giải thích quan hệ giữa các nơ-ron. Có rất nhiều cách tiếp cận quy thuộc, nhưng đến nay dường như chưa có một đáp án rõ ràng là đúng. Thậm chí có lý do để nghĩ rằng mọi đáp án hiện tại đều chưa hoàn toàn đúng. Chúng tôi cho rằng còn rất nhiều nghiên cứu quan trọng cần làm về phương pháp quy thuộc, nhưng với mục tiêu của bài viết này, cách quy thuộc cụ thể không phải điểm cốt lõi. Chúng tôi dùng một phương pháp khá đơn giản: xấp xỉ tuyến tính quan hệ giữa các thành phần.</p>
+<h3>Quy thuộc không gian bằng bản đồ saliency</h3>
+<p>Giao diện phổ biến nhất cho quy thuộc được gọi là bản đồ saliency: một heatmap đơn giản làm nổi bật các pixel của ảnh đầu vào đã góp phần nhiều nhất vào phân loại đầu ra. Chúng tôi thấy cách tiếp cận hiện tại này có hai điểm yếu.</p>
+<p>Thứ nhất, chưa rõ từng pixel riêng lẻ có nên là đơn vị chính của quy thuộc hay không. Ý nghĩa của mỗi pixel bị đan chặt với các pixel khác, không vững trước các biến đổi thị giác đơn giản như độ sáng hay tương phản, và cách xa các khái niệm cấp cao như lớp đầu ra. Thứ hai, bản đồ saliency truyền thống là một kiểu giao diện rất hạn chế: chúng chỉ hiển thị quy thuộc cho một lớp tại một thời điểm và không cho phép đào sâu vào từng điểm. Vì chúng không xử lý tầng ẩn một cách tường minh, rất khó khám phá đầy đủ vai trò của các tầng đó.</p>
+<p>Thay vào đó, chúng tôi xem quy thuộc như một khối nền tảng giao diện khác và áp dụng nó lên các tầng ẩn của mạng nơ-ron. Làm vậy thay đổi các câu hỏi ta có thể đặt ra. Thay vì hỏi màu của một pixel cụ thể có quan trọng với phân loại “labrador retriever” hay không, ta hỏi ý niệm cấp cao được phát hiện tại vị trí đó, chẳng hạn “tai mềm”, có quan trọng hay không. Cách này gần với các phương pháp Class Activation Mapping, nhưng vì các phương pháp đó diễn giải kết quả trở lại ảnh đầu vào, chúng bỏ lỡ cơ hội giao tiếp bằng các khái niệm mà tầng ẩn đã học.</p>
+<d-figure id="AttributionSpatial" style="grid-column: screen;"></d-figure>
+<p>Giao diện trên cho ta một quan hệ linh hoạt hơn với quy thuộc. Trước hết, chúng tôi tính quy thuộc từ từng vị trí không gian của từng tầng ẩn được hiển thị đến cả 1.000 lớp đầu ra. Để trực quan hóa vector nghìn chiều này, chúng tôi dùng giảm chiều để tạo bản đồ saliency đa hướng. Khi đặt các bản đồ này lên lưới activation có kích thước theo độ lớn, ta có một “mùi thông tin” dẫn vào không gian quy thuộc. Các lưới activation neo quy thuộc vào vốn từ thị giác mà từ điển ngữ nghĩa đã thiết lập. Khi rê chuột, chú giải được cập nhật để cho thấy các lớp đầu ra liên quan nhất.</p>
+<p>Có lẽ thú vị nhất, giao diện này cho phép ta tương tác thực hiện quy thuộc giữa các tầng ẩn. Khi rê chuột, các bản đồ saliency bổ sung che lên các tầng ẩn, như thể chiếu một luồng sáng vào những hộp đen của chúng. Kiểu quy thuộc từ tầng sang tầng này là một ví dụ điển hình cho việc cân nhắc thiết kế giao diện cẩn thận có thể thúc đẩy sự tổng quát hóa các trừu tượng diễn giải hiện có.</p>
+<p>Với sơ đồ này, ta đã bắt đầu nghĩ về quy thuộc ở cấp khái niệm cao hơn. Tuy nhiên, tại một vị trí cụ thể, nhiều khái niệm đang được phát hiện cùng nhau và giao diện này khiến việc tách chúng ra trở nên khó. Khi vẫn tập trung vào vị trí không gian, các khái niệm đó còn bị vướng vào nhau.</p>
+<h3>Quy thuộc theo channel</h3>
+<p>Bản đồ saliency ngầm cắt khối activation bằng cách áp dụng quy thuộc lên các vị trí không gian của một tầng ẩn. Cách này gộp qua tất cả channel, nên ta không biết bộ phát hiện cụ thể nào tại mỗi vị trí đóng góp nhiều nhất cho phân loại đầu ra cuối cùng.</p>
+<p>Một cách khác để cắt khối là theo channel thay vì theo vị trí không gian. Làm vậy cho phép ta thực hiện quy thuộc theo channel: mỗi bộ phát hiện đã đóng góp bao nhiêu vào đầu ra cuối cùng? Cách này tương tự một nghiên cứu cùng thời của Kim và cộng sự, trong đó họ quy thuộc cho tổ hợp channel đã học.</p>
+<d-figure id="AttributionChannel" style="grid-column: screen;"></d-figure>
+<p>Sơ đồ này tương tự sơ đồ trước: ta thực hiện quy thuộc từ tầng sang tầng, nhưng lần này trên channel thay vì vị trí không gian. Một lần nữa, ta dùng các biểu tượng từ từ điển ngữ nghĩa để biểu diễn các channel đóng góp nhiều nhất cho phân loại cuối cùng. Rê chuột lên một channel sẽ hiển thị heatmap activation của nó phủ lên ảnh đầu vào. Chú giải cũng cập nhật để cho thấy quy thuộc của nó đến các lớp đầu ra, tức những lớp hàng đầu mà channel này ủng hộ. Nhấp vào một channel cho phép đào sâu vào quy thuộc giữa các tầng.</p>
+<p>Dù các sơ đồ này tập trung vào quy thuộc từ tầng sang tầng, đôi khi vẫn hữu ích khi tập trung vào một tầng ẩn duy nhất. Ví dụ, hình teaser cho phép ta đánh giá giả thuyết về lý do một lớp thành công hơn lớp kia.</p>
+<!-- <figure class="l-page">
+    <img src="images/attribution-channels.png"></img>
+  </figure> -->
+<!--
+  <h3>Neuron Attribution</h3>
+
+  <p>Of course, these two types attributions need not live in isolation. We can bring both spatial and channel attribution together in a single coherent interface.</p>
+
+  <figure class="l-page" id="SpatialChannelAttribution" style="border: 1px dashed #ccc; height: 200px;"></figure>
+-->
+<p>Quy thuộc đến vị trí không gian và channel có thể tiết lộ nhiều điều mạnh mẽ về mô hình, nhất là khi kết hợp chúng. Tiếc là họ phương pháp này gặp hai vấn đề lớn. Một mặt, rất dễ tạo ra lượng thông tin quá tải: con người có thể mất hàng giờ kiểm tra phần đuôi dài các channel chỉ ảnh hưởng nhẹ đến đầu ra. Mặt khác, cả hai kiểu gộp mà ta đã xét đều mất mát nhiều và có thể bỏ lỡ các phần quan trọng của câu chuyện. Dù ta có thể tránh gộp mất mát bằng cách làm việc với từng nơ-ron, số lượng nơ-ron lại quá lớn để con người xử lý.</p>
+<h2>Đưa mọi thứ về quy mô con người</h2>
+<p>Ở các phần trước, ta đã xét ba cách cắt khối activation: thành activation không gian, channel và từng nơ-ron. Mỗi cách đều có nhược điểm lớn. Nếu chỉ dùng activation không gian hoặc channel, ta bỏ lỡ những phần rất quan trọng của câu chuyện. Ví dụ, biết bộ phát hiện tai mềm giúp phân loại ảnh thành chó Labrador là thú vị, nhưng còn thú vị hơn khi kết hợp với các vị trí đã kích hoạt để làm điều đó. Ta có thể đào xuống cấp nơ-ron để kể toàn bộ câu chuyện, nhưng hàng chục nghìn nơ-ron lại quá nhiều để con người theo dõi.</p>
+<p>Nếu muốn xây dựng giao diện hữu ích cho mạng nơ-ron, chỉ làm cho thông tin có ý nghĩa là chưa đủ. Ta cần làm nó ở quy mô con người, thay vì là một bãi đổ thông tin quá tải. Chìa khóa là tìm cách có ý nghĩa hơn để chia activation. Có lý do tốt để tin rằng các phân rã như vậy tồn tại. Thường thì nhiều channel hoặc vị trí không gian hoạt động cùng nhau theo cách rất tương quan và nên được nghĩ như một đơn vị. Các channel hoặc vị trí khác có rất ít hoạt động và có thể bỏ qua trong cái nhìn tổng quan cấp cao.</p>
+<p>Có cả một lĩnh vực nghiên cứu gọi là phân rã ma trận chuyên nghiên cứu các chiến lược tối ưu để chia nhỏ ma trận. Bằng cách làm phẳng khối của ta thành một ma trận gồm vị trí không gian và channel, ta có thể áp dụng các kỹ thuật này để thu được các nhóm nơ-ron có ý nghĩa hơn. Các nhóm này sẽ không thẳng hàng tự nhiên với khối như những cách nhóm trước. Thay vào đó, chúng là tổ hợp của vị trí không gian và channel. Hơn nữa, các nhóm được xây dựng để giải thích hành vi của mạng trên một ảnh cụ thể; dùng lại cùng nhóm cho ảnh khác sẽ không hiệu quả.</p>
+<figure style="grid-column:middle;">
+<div id="CubeGroups"></div>
+<figcaption>Ngoài việc cắt tự nhiên khối activation của tầng ẩn thành nơ-ron, vị trí không gian hoặc channel, ta cũng có thể xét các nhóm tùy ý hơn của vị trí và channel.</figcaption>
+</figure>
+<p>Các nhóm sinh ra từ phân rã này sẽ là những nguyên tử của giao diện mà người dùng thao tác. Tiếc là mọi cách nhóm đều là một đánh đổi giữa việc giảm mọi thứ về quy mô con người và việc giữ lại thông tin, vì mọi phép gộp đều mất mát. Phân rã ma trận cho phép ta chọn tiêu chí tối ưu cho các nhóm, đem lại đánh đổi tốt hơn so với các nhóm tự nhiên đã thấy ở trên.</p>
+<p>Mục tiêu của giao diện nên ảnh hưởng đến thứ ta tối ưu trong phân rã ma trận. Ví dụ, nếu muốn ưu tiên mô tả mạng đã phát hiện gì, ta muốn phân rã mô tả đầy đủ activation. Nếu muốn ưu tiên thứ sẽ thay đổi hành vi mạng, ta muốn phân rã mô tả đầy đủ gradient. Cuối cùng, nếu muốn ưu tiên điều đã gây ra hành vi hiện tại, ta muốn phân rã mô tả đầy đủ quy thuộc. Dĩ nhiên, ta có thể cân bằng ba mục tiêu này thay vì tối ưu chỉ một mục tiêu.</p>
+<p>Trong sơ đồ sau, chúng tôi xây các nhóm ưu tiên activation bằng cách phân rã activation với non-negative matrix factorization. Như tên gọi gợi ý, phương pháp này ràng buộc các nhóm chỉ cộng các phần tử không âm, nên chúng dễ diễn giải hơn dưới dạng những thành phần có mặt trong ảnh.</p>
+<d-figure id="ActivationGroups" style="grid-column: screen"></d-figure>
+<p>Hình này chỉ tập trung vào một tầng duy nhất, nhưng như đã thấy, nhìn xuyên qua nhiều tầng có thể hữu ích để hiểu mạng nơ-ron lắp ráp các bộ phát hiện cấp thấp thành khái niệm cấp cao như thế nào.</p>
+<p>Các nhóm ta xây trước đó được tối ưu để hiểu một tầng độc lập với các tầng khác. Để hiểu nhiều tầng cùng nhau, ta muốn phân rã của mỗi tầng “tương thích” với nhau: các nhóm ở tầng sớm hơn tự nhiên hợp thành các nhóm ở tầng muộn hơn. Đây cũng là điều ta có thể tối ưu trong phân rã. Trực giác là nếu một nhóm ở tầng sau nhận nhiều quy thuộc từ một nhóm ở tầng trước, hai nhóm đó nên được đặt trong quan hệ rõ ràng trong giao diện.</p>
+<d-figure id="AttributionGroups" style="grid-column: screen"></d-figure>
+<p>Trong phần này, ta nhận ra rằng cách chia khối activation là một quyết định giao diện quan trọng. Thay vì chấp nhận các lát cắt tự nhiên của khối activation, ta xây dựng các nhóm nơ-ron tối ưu hơn. Các nhóm cải thiện này vừa có ý nghĩa hơn vừa ở quy mô con người hơn, giúp người dùng đỡ vất vả khi hiểu hành vi của mạng.</p>
+<p>Các trực quan hóa của chúng tôi mới chỉ bắt đầu khám phá tiềm năng của các cơ sở thay thế trong việc cung cấp những nguyên tử tốt hơn để hiểu mạng nơ-ron. Ví dụ, dù chúng tôi tập trung tạo số lượng hướng nhỏ hơn để giải thích từng ví dụ, gần đây có những nghiên cứu thú vị tìm các hướng có ý nghĩa “toàn cục”; các cơ sở như vậy có thể đặc biệt hữu ích khi muốn hiểu nhiều ví dụ cùng lúc hoặc so sánh các mô hình.</p>
+<h2>Không gian các giao diện diễn giải</h2>
+<p>Các ý tưởng giao diện trong bài viết này kết hợp những khối nền tảng như trực quan hóa đặc trưng và quy thuộc. Việc ghép các mảnh này không tùy tiện, mà đi theo một cấu trúc dựa trên mục tiêu của giao diện. Chẳng hạn, giao diện nên nhấn mạnh mạng nhận ra gì, ưu tiên cách sự hiểu biết của nó phát triển, hay tập trung đưa mọi thứ về quy mô con người? Để đánh giá các mục tiêu như vậy và hiểu các đánh đổi, ta cần có khả năng xét các phương án thay thế một cách có hệ thống.</p>
+<p>Ta có thể nghĩ về một giao diện như hợp của các phần tử riêng lẻ.</p>
+<figure id="Atoms">
+</figure>
+<p>Mỗi phần tử hiển thị một loại nội dung cụ thể, ví dụ activation hoặc quy thuộc, bằng một kiểu trình bày cụ thể, ví dụ trực quan hóa đặc trưng hoặc trực quan hóa thông tin truyền thống. Nội dung này sống trên các substrate được định nghĩa bởi cách các tầng của mạng được chia thành các nguyên tử, và có thể được biến đổi bởi một chuỗi thao tác như lọc hoặc chiếu lên substrate khác. Ví dụ, từ điển ngữ nghĩa của chúng tôi dùng trực quan hóa đặc trưng để hiển thị activation của các nơ-ron ở một tầng ẩn.</p>
+<p>Một cách biểu diễn lối nghĩ này là dùng một ngữ pháp hình thức, nhưng chúng tôi thấy suy nghĩ trực quan về không gian này hữu ích hơn. Ta có thể biểu diễn substrate của mạng, tức những tầng nào được hiển thị và cách chia chúng, như một lưới; còn nội dung và kiểu trình bày được vẽ lên lưới đó dưới dạng các điểm và kết nối.</p>
+<figure class="l-body">
+<img src="images/design_space/empty.svg"/>
+</figure>
+<p>Thiết lập này cho ta một khung để bắt đầu khám phá không gian giao diện diễn giải từng bước. Ví dụ, hãy quay lại hình teaser. Mục tiêu của nó là giúp ta so sánh hai phân loại tiềm năng cho một ảnh đầu vào.</p>
+<figure class="l-page">
+<img src="images/design_space/teaser.svg"/>
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 0.7fr; grid-gap: 4%; margin: 24px 0 0 10.2%;">
+<figcaption>1. Trực quan hóa đặc trưng. Để hiểu một phân loại, ta tập trung vào các channel của tầng mixed4d. Trực quan hóa đặc trưng làm cho các channel này có ý nghĩa.</figcaption>
+<figcaption>2. Lọc theo quy thuộc đầu ra. Tiếp theo, ta lọc cho các lớp cụ thể bằng cách tính quy thuộc đầu ra.</figcaption>
+<figcaption>3. Đào sâu khi rê chuột. Khi rê chuột lên các channel, ta nhận được heatmap của activation không gian.</figcaption>
+</div>
+</figure>
+<style>
+    figure .teaser-thumb {
+      width: 100%;
+      border: 30px solid rgb(248, 248, 248);
+      border-radius: 10px;
+      box-sizing: border-box;
+      margin: 12px 0 10px;
+    }
+  </style>
+<p>Trong bài viết này, chúng tôi mới chỉ chạm vào bề mặt của các khả năng. Còn rất nhiều tổ hợp khối nền tảng cần khám phá, và không gian thiết kế cho ta một cách làm điều đó có hệ thống.</p>
+<!-- Neuron Attribution. -->
+<p>Hơn nữa, mỗi khối nền tảng đại diện cho một lớp kỹ thuật rộng. Các giao diện của chúng tôi chỉ chọn một cách tiếp cận, nhưng như đã thấy ở từng phần, có nhiều lựa chọn thay thế cho trực quan hóa đặc trưng, quy thuộc và phân rã ma trận. Một bước tiếp theo trực tiếp là thử các kỹ thuật thay thế đó và nghiên cứu cách cải thiện chúng.</p>
+<p>Cuối cùng, đây chưa phải tập đầy đủ các khối nền tảng; khi các khối mới được khám phá, chúng mở rộng không gian. Ví dụ, Koh và Liang gợi ý các cách hiểu ảnh hưởng của ví dụ trong tập dữ liệu lên hành vi mô hình. Ta có thể xem các ví dụ dữ liệu là một substrate khác trong không gian thiết kế, và do đó là một khối nền tảng khác có thể ghép hoàn toàn với các khối còn lại.</p>
+<figure class="l-page">
+<img src="images/design_space/dataset.svg"/>
+<div style="display: grid; grid-template-columns: 0.35fr 1fr 1fr 1fr 0.7fr; grid-gap: 4%; margin-top: 10px; padding-left: 5px;">
+<figcaption style="position: relative;">Một substrate mới.</figcaption>
+<figcaption>Một giao diện để hiểu các ví dụ dữ liệu ảnh hưởng đến phân loại đầu ra như thế nào, theo cách Koh và Liang trình bày.</figcaption>
+<figcaption>Một giao diện cho thấy các ví dụ ảnh hưởng đến channel của các tầng ẩn như thế nào.</figcaption>
+<figcaption>Một giao diện để xác định những ví dụ dữ liệu nào đã khiến các bộ phát hiện cụ thể làm tăng phân loại đầu ra nhiều nhất.</figcaption>
+</div>
+</figure>
+<p>Vượt ra ngoài các giao diện phân tích hành vi mô hình, nếu thêm tham số mô hình như một substrate, không gian thiết kế còn cho phép ta xét các giao diện để hành động lên mạng nơ-ron. Về cơ bản, mọi kỹ thuật diễn giải của chúng ta đều khả vi, nên có thể lan truyền ngược qua chúng. Trong khi hầu hết mô hình ngày nay được huấn luyện để tối ưu các hàm mục tiêu đơn giản dễ mô tả, nhiều điều ta muốn mô hình làm trong thế giới thực lại tinh tế, nhiều sắc thái và khó mô tả bằng toán học. Các giao diện có thể giúp con người đưa phản hồi diễn giải vào quá trình huấn luyện.</p>
+<!--
+  <p>
+    Beyond interfaces for analyzing model behavior, if we add model <i>parameters</i> as a substrate, the design space now allows us to consider interfaces for <i>taking action</i> on neural networks.<d-footnote>Note that essentially all our interpretability techniques are differentiable, so you can backprop through them.</d-footnote>
+
+    Simple such interfaces could visualize the weights learned by the model and, by making them interactive, provide a opportunity for human-in-the-loop training.
+    
+    For example, a human might object to a woman's presence reducing the probability of an image being classified as a "punching bag" and adjust the model parameters accordingly.
+
+    (The danger here is that we are optimizing our model to look the way we want in our interface -- if we aren't careful, this may lead to the model fooling us!<d-footnote>Related ideas have occasionally been discussed under the term "cognitive steganography."</d-footnote>)
+  </p>
+-->
+<p>Một khả năng thú vị khác là giao diện để so sánh nhiều mô hình. Chẳng hạn, ta có thể muốn xem một mô hình tiến hóa ra sao trong quá trình huấn luyện, hoặc thay đổi thế nào khi chuyển sang nhiệm vụ mới. Hoặc ta muốn hiểu cả một họ mô hình khác nhau ra sao. Nghiên cứu hiện có chủ yếu tập trung so sánh hành vi đầu ra của mô hình, nhưng các nghiên cứu gần đây bắt đầu khám phá việc so sánh các biểu diễn bên trong. Một thách thức riêng là ta có thể cần căn chỉnh các nguyên tử của từng mô hình.</p>
+<h2>Những giao diện này đáng tin đến đâu?</h2>
+<p>Để giao diện diễn giải có hiệu quả, ta phải tin vào câu chuyện mà chúng kể. Chúng tôi thấy hai mối lo với tập khối nền tảng hiện tại. Thứ nhất, nơ-ron có ý nghĩa tương đối nhất quán giữa các ảnh đầu vào khác nhau hay không, và ý nghĩa đó có được hiện thực hóa chính xác bằng trực quan hóa đặc trưng hay không? Từ điển ngữ nghĩa và các giao diện xây trên chúng dựa trên giả định rằng câu trả lời là có. Thứ hai, quy thuộc có hợp lý không, và ta có tin bất kỳ phương pháp quy thuộc hiện có nào không?</p>
+<p>Nhiều nghiên cứu trước đây đã thấy rằng các hướng trong mạng nơ-ron mang ý nghĩa ngữ nghĩa. Một ví dụ đặc biệt nổi bật là “số học ngữ nghĩa”, như “king” - “man” + “woman” = “queen”. Trong bài trước, chúng tôi khảo sát sâu câu hỏi này với GoogLeNet và thấy nhiều nơ-ron của nó dường như tương ứng với các ý niệm có ý nghĩa. Chúng tôi kiểm chứng bằng nhiều cách: trực quan hóa chúng không dùng prior từ mô hình sinh, kiểm tra phổ ví dụ khiến nơ-ron kích hoạt, và quan sát các biến đổi liên quan.</p>
+<p>Về quy thuộc, các nghiên cứu gần đây gợi ý rằng nhiều kỹ thuật hiện tại không đáng tin. Thậm chí có thể tự hỏi liệu ý tưởng này có khiếm khuyết căn bản không, vì đầu ra của một hàm có thể là kết quả của tương tác phi tuyến giữa các đầu vào. Một cách các tương tác này biểu hiện là quy thuộc phụ thuộc đường đi. Phản ứng tự nhiên là giao diện nên hiển thị rõ thông tin này: quy thuộc phụ thuộc đường đi đến mức nào? Mối lo sâu hơn là liệu sự phụ thuộc đường đi có chi phối toàn bộ quy thuộc hay không.</p>
+<p>Hành vi mô hình cực kỳ phức tạp, và các khối nền tảng hiện tại buộc ta chỉ hiển thị một vài khía cạnh cụ thể. Một hướng quan trọng cho nghiên cứu diễn giải trong tương lai là phát triển các kỹ thuật bao phủ hành vi mô hình rộng hơn. Nhưng ngay cả khi có cải thiện, chúng tôi dự đoán một dấu hiệu then chốt của độ tin cậy sẽ là giao diện không gây hiểu lầm. Việc tương tác với thông tin hiển thị tường minh không nên khiến người dùng ngầm rút ra đánh giá sai về mô hình.</p>
+<p>Tin tưởng các giao diện là điều thiết yếu cho nhiều cách ta muốn dùng diễn giải. Lý do là vì rủi ro có thể cao, như trong an toàn và công bằng, và vì những ý tưởng như huấn luyện mô hình bằng phản hồi diễn giải đặt kỹ thuật diễn giải vào giữa một bối cảnh đối kháng.</p>
+<h2>Kết luận và hướng tiếp theo</h2>
+<p>Có một không gian thiết kế phong phú cho việc tương tác với các thuật toán liệt kê, và chúng tôi tin rằng một không gian phong phú tương tự tồn tại cho việc tương tác với mạng nơ-ron. Chúng ta còn rất nhiều việc phải làm để xây dựng các giao diện diễn giải mạnh mẽ và đáng tin. Nhưng nếu thành công, diễn giải hứa hẹn trở thành một công cụ mạnh để cho phép con người giám sát có ý nghĩa và xây dựng các hệ thống AI công bằng, an toàn, phù hợp hơn.</p>
+<script>
+(function localizeDistillShell(){
+  const map = new Map([
+    ['Authors', 'TÁC GIẢ'], ['Affiliations', 'ĐƠN VỊ'], ['Published', 'XUẤT BẢN'], ['DOI', 'DOI'],
+    ['Not published yet.', 'Chưa xuất bản.'], ['No DOI.', 'Chưa có DOI.'], ['No DOI yet.', 'Chưa có DOI.'],
+    ['Appendix', 'Phụ lục'], ['Footnotes', 'Chú thích'], ['References', 'Tài liệu tham khảo']
+  ]);
+  [
+    ['Choose an input image', 'Chọn ảnh đầu vào'],
+    ['Input Image', 'Ảnh đầu vào'],
+    ['Output Classes', 'Các lớp đầu ra'],
+    ['Output class', 'Lớp đầu ra'],
+    ['Attribution by Factorized Groups', 'Quy thuộc theo nhóm đã phân rã'],
+    ['Attribution', 'Quy thuộc'],
+    ['Classes', 'Các lớp'],
+    ['Top Channels Supporting', 'Các channel ủng hộ mạnh nhất'],
+    ['Loading', 'Đang tải'],
+    ['net evidence', 'bằng chứng ròng'],
+    ['channels that most support …', 'các channel ủng hộ mạnh nhất …'],
+    ['what is a neuron looking for?', 'nơ-ron đang tìm gì?'],
+    ['how does it affect the output?', 'nó ảnh hưởng đầu ra thế nào?'],
+    ['For instance, by combining feature visualization (', 'Chẳng hạn, bằng cách kết hợp trực quan hóa đặc trưng ('],
+    ['with attribution (', 'với quy thuộc ('],
+    ['), we can explore how\n          the network decides between labels like', '), ta có thể khám phá cách mạng quyết định giữa các nhãn như'],
+    ['Several', 'Một số'],
+    ['floppy ear', 'tai mềm'],
+    ['pointy ears', 'tai nhọn'],
+    ['detectors seem to be important when distinguishing dogs, whereas', 'dường như quan trọng khi phân biệt chó, trong khi'],
+    ['are used to classify "tiger cat".', 'được dùng để phân loại "tiger cat".'],
+    ['"Vase" classification is dominated by', 'Phân loại "vase" chủ yếu do'],
+    ['leaf', 'lá'],
+    ['top of vase', 'miệng bình'],
+    ['bumpy', 'gồ ghề'],
+    ['round', 'tròn'],
+    ['yellow', 'màu vàng'],
+    ['detectors, as opposed to', 'chi phối, trái với các bộ phát hiện'],
+    ['detectors used for "lemon".', 'được dùng cho "lemon".'],
+    ['A unit seems to fire quite high on', 'Một đơn vị dường như kích hoạt khá mạnh với'],
+    ['bowties', 'nơ cổ'],
+    ['lapels', 've áo'],
+    ['Pointy ears', 'Tai nhọn'],
+    ['seem to be used to classify a "hog". A', 'dường như được dùng để phân loại "hog". Một'],
+    ['dot detector', 'bộ phát hiện đốm'],
+    ['is contributing highly to a "dalmatian" classification.', 'đóng góp mạnh cho phân loại "dalmatian".'],
+    ['upward sloping glass edges', 'các cạnh kính dốc lên'],
+    ['are a negative signal for a "wine bottle" classification.', 'là tín hiệu âm cho phân loại "wine bottle".'],
+    ['bird beaks', 'mỏ chim'],
+    ['plant-like backgrounds', 'nền giống thực vật'],
+    ['curvy shape detector', 'bộ phát hiện hình cong'],
+    ['contribute to a "brambling" classification. A', 'đóng góp cho phân loại "brambling". Một'],
+    ['is used to classify the "chain".', 'được dùng để phân loại "chain".'],
+    ['GoogLeNet has a rich variety of ear detectors which help it distinguish between 100 species of dog.', 'GoogLeNet có nhiều bộ phát hiện tai phong phú, giúp nó phân biệt giữa 100 giống chó.'],
+    ['Despite there being detectors for grass, they fire very weakly.', 'Dù có các bộ phát hiện cỏ, chúng kích hoạt rất yếu.'],
+    ['By using non-negative matrix factorization we can reduce the large number of neurons to a small set of groups that concisely summarize the story of the network.', 'Bằng phân rã ma trận không âm, ta có thể rút gọn số lượng lớn nơ-ron thành một tập nhỏ các nhóm tóm tắt ngắn gọn câu chuyện của mạng.'],
+    ['neuron groups', 'nhóm nơ-ron'],
+    ['groups', 'nhóm'],
+    ['Activations', 'Activation'],
+    ['Effect', 'Ảnh hưởng'],
+    ['of neuron groups', 'của các nhóm nơ-ron'],
+    ['of neuron groups on output classes', 'của nhóm nơ-ron lên các lớp đầu ra'],
+    ['Layer', 'Tầng'],
+    ['Channel', 'Channel'],
+    ['Showing 3 of', 'Hiển thị 3 trong số']
+    ,['and', 'và']
+    ,['feature visualization of channel', 'trực quan hóa đặc trưng của channel']
+    ,['feature visualization', 'trực quan hóa đặc trưng']
+    ,[' of channel', ' của channel']
+    ,['hover for attribution maps', 'rê chuột để xem bản đồ quy thuộc']
+    ,['for "', 'cho "']
+    ,['Reproduce in a Notebook', 'Tái lập trong Notebook']
+    ,['REPRODUCE IN A NOTEBOOK', 'TÁI LẬP TRONG NOTEBOOK']
+    ,['Reproduce in a', 'Tái lập trong']
+    ,['Notebook', 'Notebook']
+  ].forEach(([from, to]) => map.set(from, to));
+  function walk(node){
+    if(node.nodeType===Node.TEXT_NODE){
+      const t=node.nodeValue.trim();
+      if(map.has(t)) node.nodeValue=node.nodeValue.replace(t,map.get(t));
+      for (const [from, to] of map) {
+        if (node.nodeValue.includes(from)) node.nodeValue = node.nodeValue.split(from).join(to);
+      }
+    } else node.childNodes.forEach(walk);
+  }
+  let observer;
+  function run(){
+    if(observer) observer.disconnect();
+    if(document.body) walk(document.body);
+    if(observer) observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+  }
+  let scheduled = false;
+  function scheduleRun(){
+    if(scheduled) return;
+    scheduled = true;
+    setTimeout(() => { scheduled = false; run(); }, 100);
+  }
+  document.addEventListener('DOMContentLoaded', run);
+  window.addEventListener('load', run);
+  setTimeout(run,250); setTimeout(run,1000);
+  observer = new MutationObserver(scheduleRun);
+  observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+})();
+</script></d-article>
+<d-appendix>
+<h3>Lời cảm ơn</h3>
+<p>Bài viết của chúng tôi được củng cố rất nhiều nhờ phản hồi chi tiết của Ben Poole, Emma Pierson, Jason Yosinski, Jeff Heer, John Backus, Martin Wattenberg, Matt Johnson và Tim Hwang.</p>
+<p>Chúng tôi cũng rất trân trọng các cuộc trò chuyện với Tom Brown, Catherine Olsson, Daniel Dewey, Ajeya Cotra, Dario Amodei và Paul Christiano về quan hệ giữa diễn giải và an toàn; các nhận xét sâu sắc của Michael Nielsen, Zak Stone, Zan Armstrong và Anjuli Kannan; sự hỗ trợ của Wolff Dobson, Jack Clark, Charina Chou, Jason Freidenfelds và Christian Howard trong việc truyền đạt công trình đến đông đảo độc giả hơn; cùng môi trường hỗ trợ do Greg Corrado và Jeff Dean tạo dựng tại Google Brain.</p>
+<p>Cuối cùng, chúng tôi rất cảm kích Justin Gilmer đã đảm nhiệm vai trò biên tập viên tạm thời của bài viết này, và Qiqi Yan, Guillaume Alain cùng phản biện ẩn danh C đã dành thời gian phản biện bài viết.</p>
+<h3>Đóng góp của tác giả</h3>
+<p>Thiết kế giao diện và tạo mẫu. Công trình này bắt đầu từ một số minh họa giao diện thú vị của Alex vào năm 2015, kết hợp trực quan hóa đặc trưng, activation và giảm chiều. Đầu năm 2017, Chris tổng quát hóa hướng nghiên cứu này và kết hợp nó với quy thuộc. Katherine tạo mẫu các giao diện ban đầu cho quy thuộc không gian. Ian xây dựng giao diện sơ đồ Sankey cho nhóm nơ-ron. Arvind tạo phần lớn bộ giao diện cuối cùng trong sơ đồ và cải thiện đáng kể chúng, với nhiều đầu vào thiết kế và hoàn thiện từ Shan.</p>
+<p>Đóng góp khái niệm. Nhiều ý tưởng này có nguồn gốc sớm nhất từ Alex. Chris tổng quát hóa và tinh chỉnh chúng, đồng thời tích hợp quy thuộc. Chris, Arvind và Ian phát triển khung khối nền tảng. Ian và Chris đặt ra thuật ngữ “từ điển ngữ nghĩa”. Arvind và Chris kết tinh cách nghĩ này thành một ngữ pháp và đặt nó trong bối cảnh của cả cộng đồng học máy lẫn tương tác người-máy.</p>
+<p>Viết bài. Arvind và Chris viết nội dung bài, với đóng góp đáng kể từ Ian và Shan.</p>
+<p>Hạ tầng. Thư viện lõi mà chúng tôi dùng để trực quan hóa mạng nơ-ron, Lucid, chủ yếu do Chris, Alex và Ludwig viết. Chris viết phần lớn mã dùng cho quy thuộc và phân rã ma trận. Ludwig tạo các hiện thực và quy trình phân tán để sinh các sơ đồ của chúng tôi.</p>
+<h3>Thảo luận và phản biện</h3>
+<p>Phản biện 1 - Qiqi Yan. Phản biện 2 - Guillaume Alain. Phản biện 3 - Ẩn danh.</p>
+<d-footnote-list></d-footnote-list>
+<d-citation-list></d-citation-list>
+</d-appendix>
+<d-bibliography src="bibliography.bib"></d-bibliography>
+<script src="index.bundle.js" type="text/javascript"></script></body>
