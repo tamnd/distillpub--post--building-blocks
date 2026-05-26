@@ -1,0 +1,707 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<:Window on:resize="measure()" />
+
+<div ref:root class="container base-grid" style="grid-column: screen; --img-size: {{img_size}}px;" on:click="set({change_label: null})">
+  {{#if ready}}
+
+    <!-- Intro -->
+    <div class="intro">
+      <div style="grid-column: 1/4">
+        <p style="margin-top: 10px;margin-right: 15%;">
+          For instance, by combining feature visualization (<i>what is a neuron looking for?</i>)
+          with attribution (<i>how does it affect the output?</i>), we can explore how
+          the network decides between labels like
+          <b>{{left_selected_class_label}}</b>
+          and
+          <b>{{right_selected_class_label}}</b>.
+        </p>
+      </div>
+
+      <div style="grid-column: 4/7">
+        <div ref:input_image class="input_image">
+          <img src="examples/input_images/{{$example}}.jpeg" />
+          {{#if hover_channel}}
+            <Sprite src_class="sprite_mixed4d_activations"
+              bg_img="examples/activations/{{$example}}/sprite_mixed4d_activations.png"
+              n={{hover_channel}}
+              sprite_size={{14}}
+              size="{{img_size}}" />
+          {{elseif false}}
+            <svg viewBox="0 0 14 14" on:mouseleave="set({pos: []})">
+              {{#each range(14) as x}}
+              {{#each range(14) as y}}
+                <rect x="{{x}}" y="{{y}}" width="1" height="1"
+                  class="{{(x == pos[0] && y == pos[1]) ? 'selected' : ''}}"
+                  on:mouseover="set({pos: [x,y]})"></rect>
+              {{/each}}
+              {{/each}}
+            </svg>
+          {{/if}}
+        </div>
+      </div>
+      <div style="grid-column: 7/9; position: relative;">
+        <figcaption style="position: absolute; bottom: 30px; width: 60%;">
+          {{#if $example == 'dog_cat'}}
+            <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 426 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 426})">Several</a> <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 436 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 436})">floppy ear</a> detectors seem to be important when distinguishing dogs, whereas <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 221 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 221})">pointy ears</a> are used to classify "tiger cat".
+          {{elseif $example == 'flowers'}}
+            "Vase" classification is dominated by <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 2 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 2})">leaf</a> and <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 469 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 469})">top of vase</a> detectors, as opposed to <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 119 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 119})">bumpy</a>, <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 185 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 185})">round</a> and <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 25 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 25})">yellow</a> detectors used for "lemon".
+          {{elseif $example == 'bowtie_guy'}}
+            A unit seems to fire quite high on <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 490 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 490})">bowties</a>, as well as one on <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 16 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 16})">lapels</a>.
+          {{elseif $example == 'pig'}}
+            <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 403 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 403})">Pointy ears</a> seem to be used to classify a "hog". A <a  on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 520 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 520})">dot detector</a> is contributing highly to a "dalmatian" classification.
+          {{elseif $example == 'beer'}}
+          <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 57 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 57})">upward sloping glass edges</a> are a negative signal for a "wine bottle" classification.
+          {{elseif $example == 'chain'}}
+            <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 466 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 466})">bird beaks</a> and <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 100 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 100})">plant-like backgrounds</a> contribute to a "brambling" classification. A <a on:mouseleave="set({hover_channel: null})" class="{{hover_channel == 292 ? 'hover' : ''}}" on:mouseover="set({hover_channel: 292})">curvy shape detector</a> is used to classify the "chain".
+          {{/if}}
+
+        </figcaption>
+      </div>
+    </div>
+
+
+    <div class="table">
+
+      <div class="cell">
+        <div>
+          <h4>channels that most support …</h4>
+        </div>
+      </div>
+      <!-- Headers -->
+      <div class="headers">
+        <div class="cell left">
+          <div>
+            <div class="wrapper">
+              <select bind:value="left_selected_class">
+                {{#each left_classes as c}}
+                <option value="{{c.c}}" disabled={{c.c===right_selected_class}}>{{c.label}}</option>
+                {{/each}}
+              </select>
+            </div>
+          </div>
+          <div class="arrow_container">
+            <svg class="arrow" width="1000" height="12">
+              <path d="M0,6L1000,6M6,0L0,6L6,12" />
+            </svg>
+          </div>
+        </div>
+
+        <div class="flow">
+          <svg width="70" height="120">
+            <path d="M35,0 L35,108 S35,118 25,118 L0,118 M35,108 S35,118 45,118 L70,118" />
+          </svg>
+        </div>
+
+        <div class="cell right">
+          <div class="arrow_container">
+            <svg class="arrow" width="1000" height="12">
+              <path d="M0,6L1000,6M994,0L1000,6L994,12" />
+            </svg>
+          </div>
+          <div>
+            <div class="wrapper">
+              <select bind:value="right_selected_class">
+                {{#each right_classes as c}}
+                <option value="{{c.c}}" disabled={{c.c === left_selected_class}}>{{c.label}}</option>
+                {{/each}}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Viz -->
+
+      <div class="row_label cell">
+        <a href="https://distill.pub/2017/feature-visualization/">feature visualization</a> of channel
+        <div class="prompt">
+          hover for attribution maps
+          <svg width=14 height=18>
+            <path d="M0,9 L12,9 M9,6 L12,9 L9,12"/>
+          </svg>
+        </div>
+      </div>
+      <div class="features" on:mouseleave="set({hover_channel: null})">
+        {{#each left_selected_data as d, i}}
+          <div class="cell neuron {{hover_channel === d.c ? 'neuron_hover' : ''}}" style="height: {{neuron_img_size}}px;" on:mouseover="set({hover_channel: d.c})" title="Layer mixed4d, Unit {{d.c}}">
+            <Sprite src_class="sprite_mixed4d_channel" n={{d.c}} size="{{neuron_img_size}}" sprite_size="110" />
+          </div>
+        {{/each}}
+        <div class="divider" style="text-align: center; font-size: 18px; line-height: {{neuron_img_size}}px;">…</div>
+        {{#each right_selected_data as d, i}}
+        <div class="cell neuron {{hover_channel === d.c ? 'neuron_hover' : ''}}" style="height: {{neuron_img_size}}px;" on:mouseover="set({hover_channel: d.c})" title="Layer mixed4d, Unit {{d.c}}">
+          <Sprite src_class="sprite_mixed4d_channel" n={{d.c}} size="{{neuron_img_size}}" sprite_size="110" />
+        </div>
+        {{/each}}
+      </div>
+
+
+      <!-- Evidence -->
+      <div class="row_label cell">net evidence</div>
+      <div class="evidence net">
+        {{#each left_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="opacity: {{evidence_opacity(Math.abs(d.nv0 - d.nv1))}};"></span>
+            <span>{{evidence_format(Math.abs(d.nv0 - d.nv1))}}</span>
+          </div>
+        {{/each}}
+        <div class="divider"></div>
+        {{#each right_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="opacity: {{evidence_opacity(Math.abs(d.nv0 - d.nv1))}};"></span>
+            <span>{{evidence_format(Math.abs(d.nv0 - d.nv1))}}</span>
+          </div>
+        {{/each}}
+      </div>
+
+      <div class="row_label cell">for "{{left_selected_class_label}}"</div>
+      <div class="evidence">
+        {{#each left_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="background-color: {{d.nv0 > 0 ? 'var(--blue)' : 'var(--orange)'}};opacity: {{evidence_opacity(Math.abs(d.nv0))}};"></span>
+            <span>{{evidence_format(d.nv0)}}</span>
+          </div>
+        {{/each}}
+        <div class="divider"></div>
+        {{#each right_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="background-color: {{d.nv0 > 0 ? 'var(--blue)' : 'var(--orange)'}};opacity: {{evidence_opacity(Math.abs(d.nv0))}};"></span>
+            <span>{{evidence_format(d.nv0)}}</span>
+          </div>
+        {{/each}}
+      </div>
+
+      <div class="row_label cell">for "{{right_selected_class_label}}"</div>
+      <div class="evidence">
+        {{#each left_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="background-color: {{d.nv1 < 0 ? 'var(--blue)' : 'var(--orange)'}};opacity: {{evidence_opacity(Math.abs(d.nv1))}};"></span>
+            <span>{{evidence_format(d.nv1)}}</span>
+          </div>
+        {{/each}}
+        <div class="divider"></div>
+        {{#each right_selected_data as d, i}}
+          <div class="cell value">
+            <span class="swatch" style="background-color: {{d.nv1 < 0 ? 'var(--blue)' : 'var(--orange)'}};opacity: {{evidence_opacity(Math.abs(d.nv1))}};"></span>
+            <span>{{evidence_format(d.nv1)}}</span>
+          </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <div style="grid-column: page; margin-top: 20px;">
+      <ColabLink url="https://colab.research.google.com/github/tensorflow/lucid/blob/master/notebooks/building-blocks/AttrChannel.ipynb" />
+    </div>
+
+  {{else}}
+    Loading
+  {{/if}}
+</div>
+
+
+
+<style>
+  p {
+    text-align: left;
+
+  }
+
+  .container {
+    margin: 30px 20px 20px;
+    position: relative;
+    --blue: #3497FF;
+    --orange: #ff6600;
+  }
+
+  .intro {
+    grid-column: page;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 170px 1fr 1fr 1fr 30px 1fr 1fr 1fr;
+    /* //1.8fr 1fr 1fr; */
+    grid-column-gap: 15px;
+  }
+
+  .table {
+    grid-column: page;
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    grid-gap: 0 10px;
+  }
+
+  figcaption {
+    grid-column: page;
+    margin: 30px auto 0;
+  }
+
+  figcaption a {
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+    text-decoration: none;
+  }
+
+  figcaption a:hover,
+  figcaption a.hover {
+    color: hsl(24, 100%, 50%);
+    border-bottom: 1px solid hsl(24, 100%, 50%);
+    text-shadow: 0.5px 0 0 hsl(24, 100%, 50%);
+  }
+
+  .intro p {
+    font-size: 1rem;
+    line-height: 1.7em;
+  }
+
+  .intro b {
+    white-space: nowrap;
+  }
+
+  .intro figcaption {
+    margin-top: 10px;
+  }
+
+  .example_picker {
+    width: inherit!important;
+  }
+
+  .input_image {
+    position: relative;
+    z-index: 100;
+    width: 100%;
+    position: relative;
+    margin-right: 30px;
+  }
+
+  .input_image img {
+    border-radius: var(--border-radius);
+    width: 100%;
+  }
+
+  .input_image .outer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    opacity: 0.8;
+    mix-blend-mode: multiply;
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .input_image svg {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .input_image rect { opacity: 0; }
+
+  .input_image rect.selected {
+    opacity: 1;
+    fill: rgba(255, 255, 255, 0.5);
+    stroke: black;
+    stroke-width: 0.01px;
+  }
+
+  h4 {
+    line-height: 1.2em;
+    margin: 0 0 8px;
+    position: relative;
+    top: 2px;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+  }
+
+
+
+  .row_label {
+    position: relative;
+  }
+
+  .row_label .prompt {
+    font-size: 12px;
+    line-height: 1.2em;
+    position: absolute;
+    bottom: 20%;
+    right: 0;
+    max-width: 100px;
+    font-style: italic;
+    opacity: 0.5;
+    padding-right: 15px;
+  }
+
+  .row_label .prompt svg {
+    position: absolute;
+    right: 0px;
+    top: 1em;
+  }
+
+  .row_label .prompt svg path {
+    fill: none;
+    stroke: black;
+  }
+
+  .headers {
+    display: grid;
+    grid-template-columns: 1fr 30px 1fr;
+    grid-column-gap: 15px;
+  }
+
+  .headers .flow {
+    position: relative;
+  }
+
+  .headers .flow svg {
+    position: absolute;
+    bottom: 26px;
+    left: -20px;
+  }
+  .headers .left {
+    display: grid;
+    grid-template-columns: 1fr 0.3fr;
+  }
+
+  .headers .right {
+    display: grid;
+    grid-template-columns: 0.3fr 1fr;
+  }
+  .headers > * {
+    position: relative;
+  }
+  .headers .arrow_container {
+    position: relative;
+    overflow: hidden;
+  }
+  .headers .left .arrow_container {
+    right: 5px;
+  }
+  .headers .right .arrow_container {
+    right: -5px;
+  }
+  .headers .left .arrow {
+    position: absolute;
+    bottom: 17px;
+    left: 20px;
+  }
+  .headers .right .arrow {
+    position: absolute;
+    bottom: 17px;
+    right: 20px;
+  }
+  .headers svg path {
+    fill: none;
+    stroke: rgba(0, 0, 0, 0.4);
+  }
+  .headers :last-child {
+    text-align: right;
+  }
+
+  .headers span {
+    font-size: 13px;
+    display: block;
+  }
+
+  .headers select {
+    display: inline-block;
+    width: 100%;
+  }
+
+  .headers select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    padding: 0.5em 2em 0.5em 0.8em;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+    margin: 2px 0 2px 0;
+  }
+
+  .headers .left select {
+    color: var(--blue);
+  }
+
+  .headers .right select {
+    color: var(--orange);
+  }
+
+  .headers .wrapper {position:relative; display: inline;}
+
+  .headers .wrapper:after {content:""; width:0; height:0; position:absolute; pointer-events: none;}
+
+  .headers .wrapper:after {
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      top: .3em;
+      right: .75em;
+      border-top: 8px solid black;
+      opacity: 0.4;
+  }
+
+  .headers select::-ms-expand {
+      display: none;
+  }
+
+  .divider {
+    content: "…"
+    /* border-left: 1px solid rgba(0, 0, 0, 0.3); */
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 30px 1fr 1fr 1fr;
+    grid-column-gap: 15px;
+  }
+
+  .evidence {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 30px 1fr 1fr 1fr;
+    grid-column-gap: 15px;
+  }
+
+  .cell {
+    line-height: 1.7em;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 4px 0;
+    position: relative;
+  }
+
+  .value {
+    text-align: center;
+    position: relative;
+  }
+
+  .value span {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .value span.swatch {
+    text-align: center;
+    position: absolute;
+    width: 100%;
+    height: calc(100% - 6px);
+    top: 3px;
+    border-radius: 3px;
+  }
+
+  .evidence.net .value:nth-child(-n+3) .swatch{
+    background: var(--blue);
+  }
+
+  .evidence.net .value:nth-last-child(-n+3) .swatch{
+    background: var(--orange);
+  }
+
+  .cell.neuron {
+    position: relative;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+  }
+
+  .cell.neuron .inner {
+    border-radius: var(--border-radius);
+  }
+
+  .neuron.neuron_hover:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 4px solid var(--orange);
+    border-radius: var(--border-radius);
+    box-sizing: border-box;
+  }
+
+  .caption {
+    grid-column: middle;
+    margin-top: 40px;
+  }
+
+
+</style>
+
+<script>
+  import {json as loadJSON} from 'd3-request';
+  import {sup} from 'ndarray-ops';
+
+  import {range} from '../util';
+  import ExamplePicker from './ExamplePicker.html';
+  import StickyPicker from './StickyPicker.html';
+  import ColabLink from './ColabLink.html';
+
+  import Sprite from './Sprite.html';
+
+  const examples = require('../../static/examples').examples;
+
+  export default {
+    data() {
+      return {
+        examples,
+        attr_data: {classes: []},
+        selected_classes: [],
+        pos: [],
+        img_size: 100,
+        neuron_img_size: 100,
+        change_label: null,
+        loaded: false,
+        channels: range(196)
+      }
+    },
+
+    oncreate() {
+    },
+
+    computed: {
+      ready(attr_data, $labels, loaded) {
+        return loaded && attr_data != null && $labels != null
+      },
+      labels($labels) {
+        return $labels ? $labels : [];
+      },
+      left_classes(attr_data, labels) {
+        return attr_data.classes.map(c => { return {c, label: labels[c]}})
+      },
+      left_selected_class_label(left_selected_class, labels) {
+        return labels[left_selected_class];
+      },
+      right_selected_class_label(right_selected_class, labels) {
+        return labels[right_selected_class];
+      },
+      right_classes(attr_data, labels) {
+        return attr_data.classes.map(c => { return { c, label: labels[c] } })
+      },
+      selected_classes(left_selected_class, right_selected_class) {
+        return [left_selected_class, right_selected_class];
+      },
+      selected_data(attr_data, selected_classes, pos, full_attr) {
+        let data = attr_data[`${selected_classes[0]}-${selected_classes[1]}`];
+        if (!data) {
+          data = attr_data[`${selected_classes[1]}-${selected_classes[0]}`] || [];
+          data = data.slice().reverse();
+
+          if (!pos.length) {
+            data = data.map((d) => {
+              if (d.nv0) {
+                const d2 = Object.assign({}, d);
+                const temp = d2.nv0;
+                d2.nv0 = d2.nv1;
+                d2.nv1 = temp;
+                return d2;
+              }
+              return d;
+            });
+          }
+        }
+
+        if (pos.length) {
+          const idx0 = attr_data.classes.indexOf(selected_classes[0]);
+          const idx1 = attr_data.classes.indexOf(selected_classes[1]);
+          return data.map((d) => {
+            const cidx = attr_data.channels.indexOf(d.c);
+            return {
+              c: d.c,
+              nv0: full_attr.get(idx0, pos[1], pos[0], cidx),
+              nv1: full_attr.get(idx1, pos[1], pos[0], cidx)
+            };
+          });
+        }
+
+        return data;
+      },
+      left_selected_data(selected_data) {
+        // console.log(selected_data);
+        return selected_data.slice(0, 3);
+      },
+      right_selected_data(selected_data) {
+        return selected_data.slice(4, 7);
+      },
+
+      change_label_pos(change_label) {
+        const label = document.querySelectorAll('p.heading span.label')[change_label];
+        return label ? label.getBoundingClientRect() : {};
+      }
+    },
+
+    methods: {
+      change_label(event, idx) {
+        this.set({change_label: idx});
+        event.stopPropagation();
+      },
+
+      select_class(cls) {
+        const change_label = this.get('change_label');
+        const selected_classes = this.get('selected_classes');
+        selected_classes[change_label] = cls;
+        this.set({selected_classes, change_label: null, hover_channel: null});
+      },
+
+      measure() {
+        const neuron_el = this.refs.root.querySelector('.evidence .value');
+        const input_image_el = this.refs.input_image;
+        this.set({
+          neuron_img_size: neuron_el.clientWidth,
+          img_size: input_image_el.clientWidth
+        })
+      }
+    },
+
+    helpers: {
+      range,
+      evidence_opacity(v) {
+        return v / 4;
+      },
+      evidence_format(n) {
+        return n.toFixed(2);
+      },
+
+      bar_filled(d, cls, base) {
+        const val = d[cls] * 100;
+        const width = Math.abs(val) / 2;
+
+        const start = cls === base ? 50 :
+          Math.sign(val) === Math.sign(d[base]) ? 50 :
+            50 + (Math.abs(d[base] * 100) / 2);
+
+        return ((cls === 'nv0' && val > 0) || (cls === 'nv1' && val < 0)) ?
+          `right: ${start}%; width: ${width}%` :
+          `left: ${start}%; width: ${width}%`;
+      }
+    },
+
+    components: {ExamplePicker, Sprite, StickyPicker, ColabLink}
+  }
+</script>

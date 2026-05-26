@@ -1,0 +1,530 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<:Window bind:innerWidth="winWidth" bind:scrollY="scrollY" />
+
+<div ref:container class="container">
+  {{#if attr_data && $labels}}
+  <div class="legend_container">
+    <div class="legend">
+      <div>
+        <h4 class="heading">Input Image</h4>
+        <div style="position: relative;">
+          <img class="input_image" src="examples/input_images/{{$example}}.jpeg" />
+          {{#if layer_hover && layer_hover !== 'output'}}
+            <div style="position: absolute; background: rgba(255, 255, 255, 0.5); 
+              width: {{150/layer_hover_size}}px; height: {{150/layer_hover_size}}px;
+              left: {{pos_snap[layer_hover][0] * 150 / layer_hover_size}}px;
+              top:  {{pos_snap[layer_hover][1] * 150 / layer_hover_size}}px;"></div>
+          {{/if}}
+
+        </div>
+      </div>
+
+      <div>
+        <h4 class="heading" on:mouseover="set({layer_hover: undefined, pos_hover: undefined})">Output {{(layer_hover && layer_hover != 'output' && layer_hover != 'nmf')? 'Attribution' : 'Classes'}}</h4>
+
+        <ul class="attribution_list {{(layer_hover != undefined && layer_hover_n < 4)? 'attribution_active' : ''}}" on:mouseout="set({layer_hover: undefined, pos_hover: undefined})">
+          {{#if output_attr}} {{#each output_attr.slice(0, 5) as attr, i}}
+          <li on:mouseover="set({layer_hover: 'output', pos_hover: [0, i]})">
+            <span>{{$labels[attr.n]}}</span>
+            <div class="scent">
+              <div style="width: {{100 * (attr.v/attr_max)}}%;"></div>
+            </div>
+          </li>
+          {{/each}} {{/if}}
+        </ul>
+      </div>
+
+      <div class="nmf">
+        <h4 class="heading" on:mouseover="set({layer_hover: undefined, pos_hover: undefined})">Output Factors</h4>
+
+        <div class="factors_bars">
+          <ul class="factors_1 attribution_list" on:mouseout="set({layer_hover: undefined, pos_hover: undefined})">
+            {{#if attr_data}} 
+              {{#each attr_data.nmf[0].slice(0, 5) as attr, i}}
+                <li on:mouseover="set({layer_hover: 'nmf', pos_hover: [0, i]})">
+                  <span>{{$labels[attr.n]}}</span>
+                  <div class="scent">
+                    <div style="width: {{100 * (attr.v/attr_data.max.nmf[0])}}%;"></div>
+                  </div>
+                </li>
+              {{/each}} 
+            {{/if}}
+          </ul>
+          
+          <ul class="factors_2 attribution_list" on:mouseout="set({layer_hover: undefined, pos_hover: undefined})">
+            {{#if attr_data}} 
+              {{#each attr_data.nmf[1].slice(0, 5) as attr, i}}
+                <li on:mouseover="set({layer_hover: 'nmf', pos_hover: [1, i]})">
+                  <span>{{$labels[attr.n]}}</span>
+                  <div class="scent">
+                    <div style="width: {{100 * (attr.v/attr_data.max.nmf[1])}}%;"></div>
+                  </div>
+                </li>
+              {{/each}} 
+            {{/if}}
+          </ul>
+        </div>
+      </div>
+
+
+      
+    </div>
+  </div>
+
+  <div class="hidden_layers hidden_layer_labels base-grid" style="display: flex; width: 100%; height: 30px; margin-bottom: 10px;">
+    {{#if layer_hover == undefined}}
+      {{#each hidden_layers as layer}}
+      <div style="width: {{1*layer_size}}px; margin-left: 10px; margin-right: 10px;">
+        <h4 class="layer_name">{{layer}}</h4>
+      </div>
+      {{/each}}
+    {{else}}
+      {{#if layer_hover_n > 0}}
+      <div style="width: {{layer_hover_n*layer_size + (layer_hover_n-1)*20}}px; margin-right: 10px; margin-left: 10px;">
+        <h4>Influences</h4>
+      </div>
+      {{/if}}
+      {{#if layer_hover_n < 4}}
+      <div style="width: {{layer_size}}px; margin-left: 10px; margin-right: 10px">
+        <h4 class="layer_name">{{layer_hover}}</h4>
+      </div>
+      {{/if}}
+      {{#if layer_hover_n < 3}}
+      <div style="width: {{(4-layer_hover_n-1)*layer_size + (4-layer_hover_n-2)*20}}px; margin-right: 10px; margin-left: 10px;">
+        <h4>Influenced By</h4>
+      </div>
+      {{/if}}
+    {{/if}}
+    <!--
+    <div style="width: {{layer_size}}px; height: 20px; background: #333; margin-right: 10px; margin-left: 10px;"></div>
+    <div style="width: {{layer_size}}px; height: 20px; background: #333; margin-right: 10px; margin-left: 10px;"></div>
+    <div style="display: flex; background: #444;">
+      <div style="width: {{layer_size}}px; height: 20px; background: #333; margin-right: 10px; margin-left: 10px;"></div>
+      <div style="width: {{layer_size}}px; height: 20px; background: #333; margin-right: 10px; margin-left: 10px;"></div>
+    </div>
+    -->
+  </div>
+
+  <div class="hidden_layers base-grid" style="display: flex; --layer-size: {{layer_size}}px;">
+    {{#each hidden_layers as layer}}
+      <ActivationGrid example={{$example}} magnitude={{!layer_hover || layer_hover == layer}} 
+        layer={{layer}} layer_size={{layer_size}} show_zoom={{layer_hover == layer}}
+        show_layer_name={{false}}>
+
+        <div slot="background">
+          <img src="examples/attributions/{{$example}}/{{layer}}-nmf.png" style="opacity: {{layer_hover && layer_hover !== layer ? 0 : 0.6}};" />
+        </div>
+
+        <div slot="foreground">
+          {{#if layer_hover && layer_hover !== layer}}
+          <Sprite bg_img="examples/attributions/{{$example}}/{{layer_hover}}-{{layer}}.png" 
+            sprite_size={{all_layers[layer][0]}} size={{layer_size}}
+            x={{layer_hover && pos_snap[layer_hover][0]}} 
+            y={{layer_hover && pos_snap[layer_hover][1]}}></Sprite>
+          {{/if}}
+        </div>
+      </ActivationGrid>
+    {{/each}}
+  </div>
+  
+  
+
+  {{/if}}
+  <div class="base-grid">
+  <figcaption style="padding: 10px 0 0 10px; grid-column: middle; max-width: 600px; margin-top: 10px;" class="interactive-caption">
+    Attribution tends to be more meaningful in later layers.
+    
+    {{#if $example && $example == 'dog_cat'}}
+      The 
+      <a on:click="set_ag_hover('mixed4d', [1,4])"
+       class="{{pos_in_box([0,2], [3,5])? 'selected' : ''}}">
+       floppy ear</a>, 
+      <a on:click="set_ag_hover('mixed4d', [6,4])" 
+        class="{{pos_in_box([4,6], [3,5])? 'selected' : ''}}">
+        dog snout</a>, 
+      <a on:click="set_ag_hover('mixed4d', [10,6])" 
+        class="{{pos_in_box([9,11], [5,6])? 'selected' : ''}}">
+        cat head</a>, 
+      etc, do mostly what you expect.
+      
+      Surprisingly, the
+          <a on:click="set_ag_hover('mixed4d', [6,6])"
+           class="{{(layer_hover == 'mixed4d' && pos_in_box([5,6], [6,6]))? 'selected' : ''}}">
+           lower snout at mixed4d</a>
+     seems entangled with the idea of a tennis ball and
+     supports "tennis ball" and "granny smith apple."
+
+    {{elseif $example && $example == 'flowers'}}
+      In this example, the 
+          <a on:click="set_ag_hover('mixed4d', [8,12])"
+           class="{{pos_in_box([5,9], [11,12])? 'selected' : ''}}">
+           center lemons</a>
+      cause a "lemon" classification, although one
+          <a on:click="set_ag_hover('mixed4a', [11,11])"
+           class="{{pos_in_box([11,12], [11,12])? 'selected' : ''}}">
+           darker lemon</a>
+      supports "orange" more.
+      
+      The 
+          <a on:click="set_ag_hover('mixed4d', [5,6])"
+           class="{{(pos_in_box([4,7], [6,7]))? 'selected' : ''}}">
+           rim of the vase</a>
+      supports many container-like classes,
+      while the
+          <a on:click="set_ag_hover('mixed4d', [8,6])"
+           class="{{pos_in_box([8,9], [6,7])? 'selected' : ''}}">
+           handle</a>
+      supports containers with handles.
+      <!--
+      By mixed5a a lot of this fine details washes out: the
+        <a on:click="set_ag_hover('mixed5a', [3,3])"
+         class="{{(layer_hover == 'mixed5a' && pos_in_box([4,7], [6,8]))? 'selected' : ''}}">
+         vase</a>
+      mostly supports "vase", although the
+        <a on:click="set_ag_hover('mixed5a', [2,4])"
+         class="{{(layer_hover == 'mixed5a' && pos_in_box([4,7], [8,9]))? 'selected' : ''}}">
+         bottom</a>
+      supports "squash",
+      and the 
+        lemons
+        <a on:click="set_ag_hover('mixed5a', [4,6])"
+         class="{{(layer_hover == 'mixed5a' && pos_in_box([4,7], [8,9]))? 'selected' : ''}}">
+         lemons</a>
+      support "lemon" and "orange"
+    -->
+    {{elseif $example &&  $example == 'bowtie_guy'}}
+      The
+      <a on:click="set_ag_hover('mixed4d', [7,1])"
+        class="{{pos_in_box([5,7], [1,2])? 'selected' : ''}}">
+        sunglasses</a>
+      support "sunglasses" as expected, but also "cowboy hat" and "bolo tie."
+      <br>
+      The
+      <a on:click="set_ag_hover('mixed4d', [7,7])"
+        class="{{pos_in_box([6,8], [6,8])? 'selected' : ''}}">
+        bowtie</a>
+      supports various kinds of ties, as expected, but also fancy instruments.
+    {{elseif $example == 'pig'}}
+      <!-- Nose -> Dog; fur -> animals; ear -> hog -->
+      By mixed4d
+      <a on:click="set_ag_hover('mixed4d', [8,10])"
+        class="{{pos_in_box([7,8], [10,12])? 'selected' : ''}}">
+        tip of the nose</a>
+      primarily supports different kinds of dogs, while the
+      <a on:click="set_ag_hover('mixed4d', [7,7])"
+        class="{{pos_in_box([7,8], [6,8])? 'selected' : ''}}">
+        center of the face</a>
+      and the
+      <a on:click="set_ag_hover('mixed4d', [9,5])"
+        class="{{pos_in_box([9,10], [4,6])? 'selected' : ''}}">
+        right eye</a>
+      support hog. The 
+      <a on:click="set_ag_hover('mixed4d', [7,2])"
+        class="{{pos_in_box([5,7], [2,5])? 'selected' : ''}}">
+        fur</a>
+      supports furry animals and teddy bears.
+      Interestingly, attribution for hog is much more concentrated at the left ear earlier at mixed4a.
+    {{elseif $example == 'beer'}}
+      By mixed4d, the
+      <a on:click="set_ag_hover('mixed4d', [3,12])"
+        class="{{pos_in_box([2,4], [10,13])? 'selected' : ''}}">
+        label</a>
+      supports cylindrical objects with labels; the
+      <a on:click="set_ag_hover('mixed4d', [2,3])"
+        class="{{pos_in_box([2,3], [3,7])? 'selected' : ''}}">
+        bottle neck</a>
+      supports bottles;
+      the 
+      <a on:click="set_ag_hover('mixed4d', [8,5])"
+        class="{{( pos_in_box([7,10], [4,6]) || pos_in_box([8,9], [7,8]) )? 'selected' : ''}}">
+        beer</a>
+      supports dark liquids;
+      and the
+      <a on:click="set_ag_hover('mixed4d', [6,1])"
+        class="{{( pos_in_box([5,8], [0,1]) || pos_in_box([11,12], [0,1]) )? 'selected' : ''}}">
+        glass rim</a>
+      supports cups of different kinds.
+     {{elseif $example == 'chain'}}
+       The <a on:click="set_ag_hover('mixed4d', [6,3])"
+        class="{{pos_in_box([4,6], [3,5])? 'selected' : ''}}">
+        bird head</a>
+        supports various bird classes, while the 
+        <a on:click="set_ag_hover('mixed4d', [11, 11])"
+         class="{{( pos_in_box([0,1], [4,4]) || pos_in_box([1,2], [5,6]) || pos_in_box([3,3], [6,7,]) || pos_in_box([8,11], [9,9]) || pos_in_box([9,12], [10,10]) || pos_in_box([10,13], [11,12]) )? 'selected' : ''}}">
+         chain</a>
+         supports chains, necklace, and metallic objects.
+     {{/if}}
+    </figcaption>
+    
+    <figcaption style="padding: 10px 0 0 10px; grid-column: middle;">
+    <ColabLink url="https://colab.research.google.com/github/tensorflow/lucid/blob/master/notebooks/building-blocks/AttrSpatial.ipynb" />
+  </figcaption>
+  </div>
+</div>
+
+<style>
+  .container {
+    margin: 20px 0;
+  }
+
+  .legend_container {
+    margin: 0 10px;
+  }
+
+  .hidden_layers {
+    position: relative;
+  }
+
+  .layer img { 
+    position: absolute; 
+    mix-blend-mode: multiply;
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */    
+  }
+
+  .layer p {
+    margin-top: calc(var(--layer-size) + 10px);
+    margin-bottom: 0;
+  }
+
+  div[slot='foreground'] .outer {
+    position: absolute;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+    opacity: 0.9;
+  }
+
+  .legend {
+    display: grid;
+    grid-template-columns: 0.5fr 1fr 2fr;
+    grid-gap: 40px;
+    max-width: 1000px;
+    margin: 0 auto 20px auto;
+  }
+
+  .legend > * {
+    flex: 1;
+  }
+
+  .input_image {
+    height: 150px;
+    width: auto;
+    border-radius: var(--border-radius);
+  }
+
+  .example_picker {
+    position: absolute;
+    top: 0;
+    right: -15px;
+    width: 110px;
+    line-height: 1;
+  }
+
+  .example_picker img { 
+    width: 40px;
+    margin: 2px; 
+  }
+
+
+  h4 {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 8px;
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+
+  .factors_bars {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 30px;
+  }
+
+
+  .attribution_list { 
+    font-size: 13px;
+    display: block;
+    margin-top: -8px;
+  }
+
+  .attribution_list li { 
+    cursor: pointer; 
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-column-gap: 10px;
+    margin-bottom: 0;
+    text-transform: capitalize;
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+  }
+ 
+  .attribution_list li:hover, .attribution_active li { color: #000; }
+  .attribution_list li:hover .scent div, .attribution_active li .scent div { background: #666; }
+
+  .factors_1 .scent div { background: #f4a582; }
+  .factors_1 li:hover { color: #e66101; }
+  .factors_1 li:hover .scent div { background: #e66101; }
+
+  .factors_2 .scent div { background: #92c5de; }
+  .factors_2 li:hover { color: #0571b0; }
+  .factors_2 li:hover .scent div { background: #0571b0; }
+  
+  .interactive-caption a {
+    cursor: pointer;
+  }
+
+  .interactive-caption .selected {
+    color: hsl(24, 100%, 50%);
+    border-bottom: 1px solid hsl(24, 100%, 50%);
+    text-shadow: 0.5px 0 0 hsl(24, 100%, 50%);
+  }
+  
+  .hidden_layer_labels .layer_name {
+    text-transform: none;
+  }
+</style>
+
+<script>
+  import {json as loadJSON} from 'd3-request';
+
+  import Sprite from './Sprite.html';
+  import ActivationGrid from './ActivationGrid.html';
+  import ColabLink from './ColabLink.html';
+
+  import {calc_layer_size, range} from '../util';
+  const layers = require('../../static/examples').layers;
+
+  const images = [];
+
+  export default {
+    data() {
+      return {
+        all_layers: layers,
+        hidden_layers: ['mixed3a', 'mixed4a', 'mixed4d', 'mixed5a']
+      }
+    },
+
+    oncreate() {
+      const hl = this.get('hidden_layers');
+
+      this.store.observe('example', (example) => {
+        images.splice(0);
+        for (let i = hl.length - 1; i >= 0; i--) {
+          for (let j = i - 1; j >= 0; j--) {
+            const fwd = new Image(), back = new Image();
+            fwd.src = `examples/attributions/${example}/${hl[j]}-${hl[i]}.png`
+            back.src = `examples/attributions/${example}/${hl[i]}-${hl[j]}.png`
+            images.push(fwd, back);
+          }
+
+          const nmf = new Image(), out = new Image();
+          nmf.src = `examples/attributions/${example}/nmf-${hl[i]}.png`;
+          out.src = `examples/attributions/${example}/output-${hl[i]}.png`;
+          images.push(nmf, out);
+        }
+        this.set({ layer_size: calc_layer_size(this.refs.container, 4) });
+      });
+    },
+
+    computed: {
+      layer_hover: ($ag_layer_hover) => $ag_layer_hover,
+      pos_hover: ($ag_pos_hover) => $ag_pos_hover,
+
+      layer_size(winWidth, num_layer_width) {
+        return calc_layer_size(document.querySelector('#AttributionSpatial .hidden_layers'), 4);
+      },
+
+      pos_snap(hidden_layers, layer_size, pos_hover) {
+        let snap = hidden_layers.reduce((obj, layer) => {
+          obj[layer] = !pos_hover ? [0, 0] : [
+            Math.floor(layers[layer][0] * pos_hover[0] / layer_size),
+            Math.floor(layers[layer][0] * pos_hover[1] / layer_size)
+          ];
+          return obj;
+        }, {});
+        snap.output = snap.nmf = pos_hover;
+        return snap;
+      },
+
+      valid_layer_hover(layer_hover) {
+        return layer_hover && layer_hover.match('mixed') !== null;
+      },
+
+      layer_hover_size(all_layers, valid_layer_hover, layer_hover) {
+        return valid_layer_hover ? all_layers[layer_hover][0] : 0;
+      },
+
+      output_attr(attr_data, valid_layer_hover, layer_hover, pos_snap) {
+        try {
+          const ps = pos_snap[layer_hover];
+          return attr_data.layers[layer_hover][ps[1]][ps[0]]; 
+        } catch(e) {
+          return attr_data ? attr_data.output : null;
+        }
+      },
+
+      attr_max(attr_data, valid_layer_hover, layer_hover) {
+        if (!attr_data) return null;
+        return attr_data.max[valid_layer_hover ? layer_hover : 'output'];
+      },
+      
+      pos_in_box: (pos_hover, pos_snap) => {
+        return (x_bound, y_bound) => {
+          var valid = pos_hover && x_bound && y_bound;
+          if (!valid) return false;
+          var pos = pos_snap.mixed4d;
+          return ( pos
+          && pos[0] >= x_bound[0] && pos[0] <= x_bound[1]
+          && pos[1] >= y_bound[0] && pos[1] <= y_bound[1]);
+        }
+      },
+      
+      layer_hover_n: (layer_hover, hidden_layers) => {
+        if (layer_hover == 'nmf' || layer_hover == 'output') {
+          return 4;
+        } else {
+          return hidden_layers.indexOf(layer_hover);
+        }
+      },
+
+        
+    },
+
+    components: {ActivationGrid, ColabLink, Sprite},
+    
+    methods: {
+      set_ag_hover (layer, pos) {
+          var layer_size = this.get('layer_size');
+          var k = layer_size / (layers[layer][0]-1);
+          store.set({ag_layer_hover: layer, ag_pos_hover: [k*pos[0], k*pos[1]]})
+        }
+    }
+    
+  }
+</script>

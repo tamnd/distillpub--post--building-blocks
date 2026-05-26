@@ -1,0 +1,416 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<:Window bind:innerWidth="winWidth"  bind:scrollY="scrollY" />
+
+<div class="l-body" style="--top: {{top}}px; --left: {{left}}px;">
+  <div class="input_image">
+    <!-- <ExamplePicker pin="#ActivationCube" unpin="#AllActivationGridsMagnitude" /> -->
+
+    <img ref:img src="examples/input_images/{{$example}}.jpeg" alt="{{$example}}" />
+
+      <svg class="pointer_container" viewBox="0 0 {{N[0]}} {{N[1]}}">
+        <filter id="background_rect_blur">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0.02" />
+        </filter>
+
+        {{#each range(N[0]) as x}}
+        {{#each range(N[1]) as y}}
+          <rect x={{x}} y={{y}} width=1 height=1
+            class={{(x == pos[0] && y == pos[1])? "selected" : "unselected"}}
+            on:mouseover="store.set({dict_pos: [x,y]})"></rect>
+        {{/each}}
+        {{/each}}
+
+        <path d="{{pointer_line_path}}" class="pointer_line"  />
+      </svg>
+  </div>
+
+  <div class="prose">
+    <p>
+      Making sense of these activations is hard because we usually work with them as abstract vectors:
+    </p>
+
+    <p id="abstract_vector">a<sub>{{pos[1]}},{{pos[0]}}</sub> = {{pos_act_str}}</p>
+
+    <p>
+      With feature visualization, however, we can transform this abstract vector into a more meaningful "semantic dictionary".
+    </p>
+  </div>
+</div>
+
+{{#if top_acts}}
+  <div class="semantic_dict">
+    <span class="annotation">{</span>
+
+    {{#each top_acts as top}}
+      <Sprite src_class="sprite_mixed4d_channel" n={{top[0]}} size="{{neuron_size}}" sprite_size="110" />
+
+      <span class="colon annotation">:</span>
+
+      <div class="value" title="Layer mixed4d, Unit {{top[0]}}: {{(top[1]+'').slice(0,4)}}">
+        <span style="bottom: {{top[1]/$max_act*75}}px;">{{(top[1]+'').slice(0,4)}}</span>
+        <div class="bar" style="height: {{top[1]/$max_act*75}}px;"></div>
+      </div>
+
+      <span class="comma annotation">,</span>
+    {{/each}}
+
+    <span class="annotation"> ...&nbsp;}</span>
+  </div>
+
+  <figcaption class="l-body interactive-caption" style="margin-top: 20px;">
+    {{#if $example == 'dog_cat'}}
+      There seem to be detectors for
+      <a on:click="store.set({dict_pos: [1,4]})"
+       class="{{pos_in_box([0,2], [3,5])? 'selected' : ''}}">
+       floppy ears</a>,
+      <a on:click="store.set({dict_pos: [6,4]})"
+        class="{{pos_in_box([4,6], [3,5])? 'selected' : ''}}">
+        dog snouts</a>,
+      <a on:click="store.set({dict_pos: [10,6]})"
+        class="{{pos_in_box([9,11], [5,6])? 'selected' : ''}}">
+        cat heads</a>,
+      <a on:click="store.set({dict_pos: [5,9]})"
+        class="{{(pos_in_box([3,6], [9,10]) || pos_in_box([9,10], [9,10]))? 'selected' : ''}}">
+        furry legs</a>,
+      and
+      <a on:click="store.set({dict_pos: [8,12]})"
+        class="{{pos_in_box([0,12], [12,13])? 'selected' : ''}}">
+        grass</a>.
+      {{#if pos_in_box([0,2], [3,5])}}
+        GoogLeNet has a rich variety of ear detectors which help it distinguish between 100 species of dog.
+      {{elseif pos_in_box([0,12], [12,13])}}
+        Despite there being detectors for grass, they fire very weakly.
+      {{else}}
+        <br>
+      {{/if}}
+    {{elseif $example == 'flowers'}}
+      There seem to be detectors for
+      <a on:click="store.set({dict_pos:[6,8]})"
+        class="{{pos_in_box([4,7], [6,8])? 'selected' : ''}}">
+        vases</a>,
+      <a on:click="store.set({dict_pos: [5,1]})"
+        class="{{(pos_in_box([3,7], [2,4]) || (pos[0]==5 && pos[1]==1))? 'selected' : ''}}">
+        flowers</a>,
+      and
+      <a on:click="store.set({dict_pos: [6,12]})"
+        class="{{pos_in_box([5,13], [11,12])? 'selected' : ''}}">
+        yellow spheres</a>.
+      <br>
+      Interestingly,
+      <a on:click="store.set({dict_pos: [9,8]})"
+        class="{{(pos_in_box([6,8], [9,9]) || (pos[0]==9 && pos[1]==8))? 'selected' : ''}}">
+        horn detectors</a>
+      seem to double for detecting the vase's handle.
+    {{elseif $example == 'bowtie_guy'}}
+
+      There seem to be detectors for
+      <a on:click="store.set({dict_pos: [5,2]})"
+        class="{{pos_in_box([5,7], [1,2])? 'selected' : ''}}">
+        sunglasses</a>,
+      <a on:click="store.set({dict_pos: [6,4]})"
+        class="{{(pos_in_box([5,8], [3,4]))? 'selected' : ''}}">
+        faces</a>,
+      and
+      <a on:click="store.set({dict_pos: [7,7]})"
+        class="{{pos_in_box([6,8], [6,8])? 'selected' : ''}}">
+        chin/bowtie</a>.
+    {{elseif $example == 'pig'}}
+      There seem to be detectors for different kinds of animal
+      <a on:click="store.set({dict_pos: [10, 5]})"
+        class="{{pos_in_box([7, 10], [2, 5]) ? 'selected': ''}}">ears</a> and
+      <a on:click="store.set({dict_pos: [6, 9]})"
+        class="{{pos_in_box([4, 8], [6, 9]) ? 'selected' : ''}}">faces</a>.
+      Interestingly,
+        <a on:click="store.set({dict_pos: [7, 11]})"
+          class="{{pos_in_box([7, 10], [10, 13]) ? 'selected' : ''}}">nose</a>
+      detectors appear to take on floral (or petal-like) aspects.
+    {{elseif $example == 'beer'}}
+      There seem to be detectors for
+      <a on:click="store.set({dict_pos: [6, 1]})"
+        class="{{pos_in_box([5, 7], [0, 2]) ? 'selected' : ''}}">glass rims</a>
+      and
+      <a on:click="store.set({dict_pos: [3, 7]})"
+        class="{{pos_in_box([3, 5], [5, 8]) ? 'selected' : ''}}">bottles</a>.
+    {{elseif $example == 'chain'}}
+      There seem to be detectors for bird features including
+      <a on:click="store.set({dict_pos: [6, 4]})"
+        class="{{pos_in_box([4, 6], [4, 4]) ? 'selected' : ''}}">the head</a>,
+      <a on:click="store.set({dict_pos: [10, 6]})"
+        class="{{pos_in_box([10, 11], [6, 6]) ? 'selected' : ''}}">feathers</a>
+      and
+      <a on:click="store.set({dict_pos: [9, 8]})"
+        class="{{pos_in_box([7, 9], [8, 8]) ? 'selected' : ''}}">legs</a>.
+      Detectors for the chain primarily look for
+      <a on:click="store.set({dict_pos: [0, 4]})"
+        class="{{pos[0] === 0 && pos[1] === 4 ? 'selected' : ''}}">curved shapes</a>
+      (including as expressed with a
+      <a on:click="store.set({dict_pos: [10, 10]})"
+        class="{{pos[0] === 10 && pos[1] === 10 ? 'selected' : ''}}">dog snout</a>),
+      but also pick up on
+      <a on:click="store.set({dict_pos: [11, 11]})"
+        class="{{pos[0] === 11 && pos[1] === 11 ? 'selected' : ''}}">metallic elements</a>.
+    {{/if}}
+  </figcaption>
+{{/if}}
+
+<figcaption class="l-body" style="margin-top: 15px;">
+  <ColabLink url="https://colab.research.google.com/github/tensorflow/lucid/blob/master/notebooks/building-blocks/SemanticDictionary.ipynb" />
+</figcaption>
+
+<style>
+.input_image {
+  position: relative;
+  float: left;
+  width: 224px;
+  height: 224px;
+  margin-right: 15px;
+}
+
+.input_image > img, .input_image > svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius);
+}
+
+.example_picker {
+  position: fixed;
+  top: var(--top);
+  left: calc(var(--left) - 90px);
+  height: 285px;
+}
+
+.pointer_container rect {
+  opacity: 0;
+}
+
+.pointer_container .selected {
+  opacity: 1;
+  fill: none;
+  stroke: hsl(24, 100%, 50%);
+  stroke-width: 0.1px;
+}
+
+.pointer_container .pointer_line {
+  fill: none;
+  stroke: hsl(24, 100%, 50%);
+  stroke-width: 0.1px;
+}
+
+#abstract_vector {
+  display: inline-block;
+  padding: 10px;
+  background-color: hsl(0, 0%, 97%);
+  border-top: 1px solid hsla(0, 0%, 0%, 0.1);
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.1);
+  border-left: 3px solid hsl(24, 100%, 50%);
+  width: calc(100% - 284px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+sub { font-size: 65%; }
+
+.semantic_dict {
+  grid-column: text/page;
+  display: flex;
+  margin-top: 30px;
+  align-items: center;
+  justify-content: left;
+  z-index: 100;
+}
+
+.semantic_dict .inner { border-radius: var(--border-radius); }
+
+.semantic_dict .value {
+  display: flex;
+  position: relative;
+  min-width: 25px;
+  height: 75px;
+  align-self: flex-end;
+  font-size: 80%;
+  color: #000;
+  z-index: 100;
+}
+
+.semantic_dict .value span { position: absolute; }
+
+.semantic_dict .bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  min-width: 10px;
+}
+
+.semantic_dict span.annotation {
+  font-size: 2em;
+  font-weight: 300;
+  color: #777;
+}
+
+.semantic_dict span:first-child {
+  padding-left: 0;
+  padding-right: 10px;
+}
+
+.semantic_dict span.colon { padding: 10px; }
+
+.semantic_dict span.comma {
+  padding-left: 10px;
+  padding-right: 15px;
+}
+
+.interactive-caption a {
+  cursor: pointer;
+}
+
+.interactive-caption .selected {
+  color: hsl(24, 100%, 50%);
+  border-bottom: 1px solid hsl(24, 100%, 50%);
+  text-shadow: 0.5px 0 0 hsl(24, 100%, 50%);
+}
+</style>
+
+<script>
+  import {argmax} from 'ndarray-ops';
+  import {desc, fmtAct, range} from '../util';
+  import Sprite from './Sprite.html'
+  import ColabLink from './ColabLink.html'
+
+  function vector_y (N) {
+    const p = document.querySelector('#SemanticDict #abstract_vector');
+    const img = document.querySelector('#SemanticDict .input_image');
+    if (!p || !img) return 2.5;
+
+    const imgbb = img.getBoundingClientRect();
+    const pbb = p.getBoundingClientRect();
+    return (pbb.top - imgbb.top) / N[0] + 1;
+  }
+
+  function present_vector(pos, activations) {
+    return !activations ? [] :
+      range(activations.shape[3]).map(n => activations.get(0, pos[1], pos[0], n));
+  }
+
+  function tops(vec, cmp) {
+    const sorted_ns = range(vec.length).sort((a, b) => (cmp || desc)(vec[a], vec[b]));
+    return sorted_ns.slice(0, 5).map((n) => [n, vec[n]]);
+  }
+
+  const DEFAULT_POS = {
+    dog_cat: [1, 4],
+    flowers: [6, 8],
+    bowtie_guy: [5, 2],
+    pig: [10, 5],
+    beer: [6, 1],
+    chain: [6, 4]
+  };
+
+  export default {
+    data() {
+      return {N: [14, 14]};
+    },
+
+    oncreate() {
+      this.set({vector_y: vector_y(this.get('N'))});
+
+      // Set/observe store to coordinate with ActivationVecVis diagram.
+      this.store.set({dict_pos: this.get('pos')});
+
+      this.store.observe('example', (example) => {
+        this.store.set({dict_pos: DEFAULT_POS[example]});
+        require(`../../static/examples/npy/${example}_mixed4d_activations.npy`)
+          .load((activations) => {
+            const _ = this.recalc_pos(activations);
+            this.store.set({
+              activations,
+              max_act: activations.get(...argmax(activations)),
+              pos_act: _.pos_act,
+              top_act: _.top_act
+            });
+          });
+      });
+
+      this.store.observe('dict_pos', () => this.store.set(this.recalc_pos()));
+
+      this.observe('scrollY', () => {
+        window.cancelAnimationFrame(window.dictPicker);
+        window.dictPicker = window.requestAnimationFrame(() => {
+          const img = this.refs.img.getBoundingClientRect();
+          this.set({top: img.top, left: img.left});
+        });
+      });
+    },
+
+    computed: {
+      pos: ($dict_pos, $example) => $dict_pos || DEFAULT_POS[$example],
+
+      pos_in_box: (pos) => {
+        return (x_bound, y_bound) =>
+          ( pos && x_bound && y_bound
+          && pos[0] >= x_bound[0] && pos[0] <= x_bound[1]
+          && pos[1] >= y_bound[0] && pos[1] <= y_bound[1]);
+      },
+
+      pointer_line_path: (N, pos, vector_y) => {
+        var start_y = Math.min(Math.max(vector_y, pos[1]), pos[1]+1);
+        var y_dist = Math.abs(start_y - vector_y);
+        var main_x_start = Math.min(N[0] + 0.5, pos[0] + 1 + y_dist);
+        return `M ${pos[0]+1} ${start_y} L ${main_x_start} ${vector_y} L ${N[0]+1.5} ${vector_y}`
+      },
+
+      pos_act_str: ($pos_act) => {
+        let s = '['
+
+        if ($pos_act) {
+          for (let n = 0; n < Math.min(12, $pos_act.length); n++) {
+            if (n > 0) s += ', ';
+            s += fmtAct($pos_act[n]);
+          }
+        }
+
+        return s + ', ...]';
+      },
+
+      vector_y: (winWidth, N) => vector_y(N),
+
+      top_acts: ($top_act) => $top_act ? $top_act.slice(0, 4) : [],
+
+      neuron_size (winWidth) {
+        const div = document.querySelector('#SemanticDict .semantic_dict');
+        if (!div) return 110;
+        return ~~(div.getBoundingClientRect().width / 8);
+      }
+    },
+
+    methods: {
+      recalc_pos(acts) {
+        const pos_act = present_vector(
+          this.store.get('dict_pos'),
+          acts || this.store.get('activations')
+        );
+        return {pos_act, top_act: tops(pos_act)};
+      }
+    },
+
+    components: {ColabLink, Sprite},
+    helpers: {range}
+  }
+</script>

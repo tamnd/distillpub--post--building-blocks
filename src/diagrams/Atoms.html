@@ -1,0 +1,116 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<div class="root">
+    <div class="layers">
+        <h4 class="red">Layers</h4>
+        <ul>
+            <li>output</li>
+            <li class="hidden">hidden</li>
+            <li>input</li>
+        </ul>
+    </div>
+    <div class="atoms">
+        <h4 class="orange">Atoms</h4>
+        <ul>
+            <li class="groups">group</li>
+            <li class="spatial">spatial</li>
+            <li class="channels">channel</li>
+            <li class="neurons">neuron</li>
+        </ul>
+    </div>
+    <div class="content">
+        <h4 class="green">Content</h4>
+        <ul>
+            <li>activations</li>
+            <li>attribution</li>
+        </ul>
+    </div>
+    <div class="presentation">
+        <h4 class="blue">Presentation</h4>
+        <ul>
+            <li class="information">information visualization</li>
+            <li class="feature">feature visualization</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+    .root {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        grid-gap: 20px;
+    }
+    .root h4 {
+        border-bottom: 3px solid;
+        padding-bottom: 4px;
+    }
+    .root li {
+        font-size: 13px;
+        line-height: 1.4em;
+    }
+    .presentation ul,
+    .atoms ul, 
+    .layers ul {
+        padding-left: 0px;
+    }
+    .presentation li,
+    .atoms li, 
+    .layers li {
+        list-style-type: none;
+    }
+    .presentation li,
+    .atoms li {
+        background-size: 40px;
+        height: 40px;
+        padding-left: 50px;
+        background-repeat: no-repeat;
+    }
+    .layers ul {
+        padding-left: 50px;
+    }
+    li.information { background-image: url(images/atoms-information.jpg) }
+    li.feature { background-image: url(images/atoms-feature.jpg) }
+    li.neurons { background-image: url(images/atoms-neurons.svg) }
+    li.channels { background-image: url(images/atoms-channels.svg) }
+    li.spatial { background-image: url(images/atoms-spatial.svg) }
+    li.groups { background-image: url(images/atoms-groups.svg) }
+    .layers ul {
+        background-image: url(images/atoms-layers.jpg);
+        background-size: 34px;
+        background-repeat: no-repeat;
+        background-position: 0 5px;
+    }
+    .layers li {
+        position: relative;
+        padding-left: 12px;
+        margin: 0;
+    }
+    .layers li::after {
+        content: " ";
+        width: 6px;
+        border-top: 1px solid rgba(0, 0, 0, 0.3);
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 0;
+    }
+    li.hidden {
+        height: 140px;
+        line-height: 140px;
+        border-left: 1px solid rgba(0, 0, 0, 0.3);
+        margin: 10px 0;
+    }
+</style>

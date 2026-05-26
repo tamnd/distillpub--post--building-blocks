@@ -1,0 +1,453 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<:Window on:resize="measure()" />
+
+{{#if attr_data && $labels}}
+<div class="root" ref:root>
+
+  <div class="input">
+    <h4>Input Image</h4>
+  
+    <div class="input_image" ref:input_image>
+      <img src="examples/input_images/{{$example}}.jpeg" /> 
+      <div class="image_overlay">
+        {{#if hover.length || selected !== 'output'}}
+          <Sprite src_class="sprite_{{hover[0] || selected[0]}}_activations" 
+            bg_img="examples/activations/{{$example}}/sprite_{{hover[0] || selected[0]}}_activations.png"
+            n={{hover[1] || selected[1]}} 
+            sprite_size={{all_layers[hover[0] || selected[0]][0]}} size="{{input_image_size}}" /> 
+        {{/if}}
+      </div>
+    </div>
+
+  </div>
+
+  <div class="output">
+    <h4>Output Classes</h4>
+    <ul class="output_classes attribution_list" on:mouseout="set({layer_hover: undefined, pos_hover: undefined})">
+      {{#each hover_data.l.slice(0, 5) as attr, i}}
+      <li on:mouseover="set({layer_hover: 'output', pos_hover: [0, i]})">
+        <span>{{$labels[attr.c]}}</span>
+        <div class="scent">
+          <div style="width: {{100 * (attr.v / max_attr(hover_data.l))}}%;"></div>
+        </div>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+
+
+  <div class="columns">
+    <h4>
+      Top Channels Supporting
+      {{#if selected === 'output'}}
+        {{#if $example === 'chain'}}
+          {{$labels[attr_data.output.l[1].c]}}
+        {{else}}
+          {{$labels[attr_data.output.l[0].c]}}
+        {{/if}}
+      {{else}}
+        <span class="selected">
+          Layer {{selected[0]}}, Channel {{selected[1]}}
+        </span>
+      {{/if}}
+      </h4>
+
+    <div class="channel_attribution">
+      {{#each hidden_layers as layer}}
+        <div class="
+          {{selected !== 'output' && selected[0] !== layer ? 'supporting_layer' : ''}}
+          {{selected[0] === layer ? 'selected_layer' : ''}} 
+          layer_{{layer}} layer" 
+          on:mouseout="set({hover: []})">
+
+          <p class="heading" on:mouseover="set({hover: []})">{{layer}}</p>
+
+          {{#each (selected_data[layer] || prev_selected_data[layer]).slice(0, 3) as d, i}} 
+            <div title="Layer {{layer}}, Unit {{d.c}}" on:mouseover="set({hover: [layer, d.c, i]})" on:click="setSelected(layer, d.c)"
+              class="
+                      {{hover[0] === layer && hover[1] === d.c ? 'hovered_channel' : ''}} 
+                      {{selected[0] === layer && selected[1] === d.c ? 'selected_channel' : ''}} 
+                      {{selected[0] === layer && selected[1] !== d.c ? 'selected_layer_channel' : ''}}
+                      channel
+                    ">
+              <div class="sprite" style="height: {{neuron_image_size}}px;">
+                <Sprite src_class="sprite_{{layer}}_channel" n={{d.c}} size="{{neuron_image_size}}" sprite_size="110" />
+              </div>
+              <div class="bar">
+                <div class="bar_filled" style="width: {{d.v / max_attr(selected_data[layer] || prev_selected_data[layer]) * 100}}%;"></div>
+              </div>
+
+            </div>
+          {{/each}}
+
+          <div class="spacer channel">
+            ... <br />
+            <span>Showing 3 of <b>{{num_channels[layer]}}</b></span>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</div>
+{{/if}}
+
+<style>
+  .root {
+    max-width: 1000px;
+    padding: 0 20px;
+    margin: 20px auto;
+    display: grid;
+    grid-gap: 30px;
+    grid-template: 
+      "input output" min-content
+      "channels channels" auto / min-content auto;
+  }
+  
+  @media (min-width: 768px) {
+    .root {
+      grid-template: 
+        "input channels" 264px
+        "output channels" auto / min-content auto;;
+    }
+  }
+  
+  .input {
+    grid-area: input;
+  }
+
+  .columns {
+    grid-area: channels;
+  }
+  
+  .output {
+    grid-area: output;
+  }
+
+  h4 {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 8px;
+    margin: 0 0 10px;
+    font-weight: 700;
+  }
+  
+  .sprite {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sprite > * {
+    position: absolute;
+    top: 0;
+  }
+
+  .channel_attribution {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-gap: 10px;
+    margin: 0 -10px;
+    --selected-color: #d1e5f0;
+  }
+
+  .layer {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+    padding: 0 10px;
+    border-radius: 4px;
+  }
+
+  .layer:last-child { border-right: 0; }
+
+  .heading {
+    font-size: 90%;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: capitalize;
+  }
+
+  h4 .selected {
+    display: inline-block;
+    padding: 0 4px;
+    background: #d1e5f0;
+    border-radius: 2px;
+
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  .layer p.heading {
+    margin: 0;
+    font-weight: normal;
+    font-size: 12px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 3px;
+    margin-bottom: 6px;
+  }
+
+  .channel {
+    position: relative;
+    cursor: pointer;
+    margin-bottom: 6px;
+    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+    padding-bottom: 6px;
+  }
+
+  .channel .inner { border-radius: var(--border-radius); }
+
+  .bar {
+    position: absolute;
+    bottom: 10px;
+    left: 4px;
+    width: calc(100% - 8px);
+    height: 14px;
+    box-sizing: border-box;
+    background: rgba(200, 200, 200, 0.9);
+    border-radius: 7px;
+    border-top: 1px solid rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    padding: 1px 2px;
+  }
+
+  .bar_filled { 
+    background-color: hsla(30, 100%, 55%, 1);
+    height: calc(100%);
+    box-sizing: border-box;
+    border-top: solid 1px rgba(255, 255, 255, 0.2);
+    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+  }
+
+  .hovered_channel:after,
+  .selected_channel:after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 2px);
+    box-sizing: border-box;
+    border-radius: 8px;
+  }
+
+  .hovered_channel:after {
+    border: 4px solid rgba(0, 0, 0, 0.3);
+  }
+
+  .selected_channel:after {
+    border: 4px solid #4393c3;
+  }
+
+  /* .hovered_channel, .selected_channel, .supporting_layer .hovered_channel { border-color: #4393c3; } */
+  /* .supporting_layer .channel:not(.hovered_channel) { border-color: var(--selected-color); } */
+
+  /* .supporting_layer, .selected_layer { border-right-color: #ccc; } */
+  .supporting_layer { 
+    background-color: var(--selected-color); 
+    box-shadow: 0px 4px 9px rgba(0, 0, 0, 0.25);
+  }
+
+  /* .hovered_channel .bar, .selected_channel .bar, .supporting_layer .bar { border-color: #b0b0b0; } */
+  /* .hovered_channel .bar_filled, .selected_channel .bar_filled, .supporting_layer .bar_filled { background-color: #b0b0b0; } */
+  /* .supporting_layer .hovered_channel .bar { border-color: #999; } */
+  /* .supporting_layer .hovered_channel .bar_filled { background-color: #999; } */
+  .selected_layer .bar { opacity: 0; }
+  .selected_layer_channel { opacity: 0.3; }
+
+  /* Negative margins to produce bridging effect for selected channel. */
+  /* .layer_mixed3b .selected_channel {
+    margin-right: -1px;
+    padding-right: 15px;
+    border-right: 1px solid var(--selected-color);
+  }
+
+  .layer_mixed4a .selected_channel, 
+  .layer_mixed4b .selected_channel, 
+  .layer_mixed4c .selected_channel {
+    margin-left: -1px;
+    margin-right: -1px;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-left: 1px solid var(--selected-color);
+    border-right: 1px solid var(--selected-color);
+  }
+
+  .layer_mixed4d .selected_channel {
+    margin-left: -1px;
+    padding-left: 15px;
+    border-left: 1px solid var(--selected-color);
+  } */
+
+  .spacer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    cursor: auto;
+    border: none;
+  }
+
+  .spacer span { 
+    margin-top: 10px;
+    font-size: 70%; 
+  }
+
+  .layer .supported_by {
+    margin: 0 0 -10px -15px;
+    font-size: 80%;
+    font-weight: bold;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .supports {
+    margin: 0 -15px -10px 0;
+    font-size: 80%;
+    font-weight: bold;
+    text-align: right;
+  }
+
+  .side_labels {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+  }
+
+  .input_image {
+    position: relative;
+  }
+
+  .input_image img { 
+    border-radius: var(--border-radius);
+  }
+
+  .image_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .input_image .outer {
+    position: absolute;
+    opacity: 0.8;
+    mix-blend-mode: multiply;
+    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+    image-rendering: -moz-crisp-edges;          /* Firefox                        */
+    image-rendering: -o-crisp-edges;            /* Opera                          */
+    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+    image-rendering: pixelated; /* Chrome */
+    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */  
+    border-radius: var(--border-radius);
+    overflow: hidden;
+  }
+
+  .side_labels .attribution_list { display: block; }
+
+  .side_labels .attribution_list {
+    margin-top: -8px;
+  }
+  .side_labels .attribution_list li { 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 13px;
+  }
+
+  .example_picker {
+    width: 100%;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
+  }
+</style>
+
+<script>
+  import {format} from 'd3-format';
+  import {json as loadJSON} from 'd3-request';
+
+  import {fmtAct, range} from '../util';
+  import Sprite from './Sprite.html';
+  const examples = require('../../static/examples');
+
+  const HIDDEN_LAYERS = ['mixed3b', 'mixed4a', 'mixed4b', 'mixed4c', 'mixed4d'];
+
+  export default {
+    data() {
+      return {
+        neuron_image_size: 110,
+        input_image_size: 150,
+        all_layers: examples.layers,
+        hidden_layers: HIDDEN_LAYERS,
+        hover: [],
+        prev_selected: 'output',
+        selected: 'output',
+        num_channels: {
+          'mixed3b': 480, 'mixed4a': 508, 'mixed4b': 512,
+          'mixed4c': 512, 'mixed4d': 528
+        }
+      }
+    },
+
+    oncreate() {
+    },
+
+    computed: {
+      prev_selected_data (attr_data, prev_selected) {
+        if (!attr_data) return null;
+        return attr_data[prev_selected] || attr_data[prev_selected[0]][prev_selected[1]];
+      },
+
+      selected_data (attr_data, selected) {
+        if (!attr_data) return null;
+        return attr_data[selected] || attr_data[selected[0]][selected[1]];
+      },
+
+      hover_data (attr_data, selected_data, hover) {
+        return hover.length ? attr_data[hover[0]][hover[1]] : selected_data;
+      }
+    },
+
+    methods: {
+      setSelected(layer, channel) {
+        const sel = this.get('selected');
+        this.set({
+          prev_selected: sel[0] === layer ? this.get('prev_selected') : sel,
+          selected: sel[0] === layer && sel[1] === channel ? 
+            'output' : [layer, channel]
+        });
+      },
+
+      measure() {
+        const layer_el = this.refs.root.querySelector('.sprite');
+        console.log(layer_el);
+        const input_image_el = this.refs.input_image;
+        this.set({
+          neuron_image_size: layer_el.clientWidth,
+          input_image_size: input_image_el.clientWidth
+        })
+      }
+    },
+
+    helpers: {
+      fmt: fmtAct,
+      max_attr (data) {
+        return data[data.length - 1]
+      }
+    },
+
+    components: {Sprite}
+  }
+</script>

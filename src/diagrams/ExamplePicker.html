@@ -1,0 +1,150 @@
+<!--
+  Copyright 2018 Google LLC
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<:Window bind:innerWidth="winWidth" bind:scrollY='scrollY'/>
+
+<div ref:picker class="example_picker {{pinned}}"
+  on:mouseover="clearTimer()" on:mouseleave="reSort()">
+  {{#each examples as ex}}
+    {{#if !hide_selected || ex !== $example}}
+      <img src="examples/input_images/{{ex}}.png" alt="{{ex}}" 
+        class="{{ex === $example ? 'selected' : ''}}" on:click="store.set({example: ex})" />
+    {{/if}}
+  {{/each}}
+</div>
+
+<style>
+  .example_picker {
+    width: 50px;
+    overflow: hidden;
+    transition-duration: .5s;
+    transition-timing-function: ease-in-out;
+    transition-property: opacity, height;
+    z-index: 100;
+  }
+
+  .example_picker img {
+    width: 44px;
+    cursor: pointer;
+    opacity: 0.4;
+    border: 3px solid transparent;
+    border-radius: var(--border-radius);
+  }
+
+  img.selected, img.selected:hover {
+    border-color: #ff6600;
+    opacity: 0.8;
+  }
+
+  img:hover { 
+    opacity: 1;
+    /* border-color: #3497FF; */
+  }
+
+  .example_picker.collapse { 
+    height: 50px; 
+    transition-property: left, opacity, height;
+  }
+
+  .example_picker.pin, .example_picker.unpin {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: 50px;
+    transition-property: top, left, opacity, height;
+  }
+
+  .example_picker.collapse:hover, .example_picker.pin:hover {
+    height: 285px;  
+  }
+
+  .example_picker.unpin { 
+    opacity: 0; 
+  }
+
+  .two {
+    position: fixed;
+    top: 20px;
+    left: calc(var(--left) - 90px);
+    height: 50px;
+    width: 50px;
+    transition-property: width, height, left;
+  }
+
+  .three {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    height: 50px;
+    width: 50px;
+    opacity: 0.5;
+    transition-property: width, height, left;
+  }
+
+  .two:hover, .three:hover {
+    opacity: 1;
+    height: 525px;
+  }
+</style>
+
+<script>
+  const examples = require('../../static/examples').examples;
+  
+
+  export default {
+    data() {
+      return {examples};
+    },
+
+    oncreate() {
+      this.observe('pinned', this.reSort);
+    },
+
+    computed: {
+      pinned(pin, unpin, scrollY) {
+        if (!pin) return '';
+
+        pin = document.querySelector(pin);
+        unpin = document.querySelector(unpin);
+        if (!pin || !unpin) return '';
+
+        pin = pin.getBoundingClientRect();
+        unpin = unpin.getBoundingClientRect();
+
+        if (unpin.bottom <= 0) return 'unpin';
+        else if (pin.bottom <= 0) return 'pin';
+        else if (pin.top <= 0) return 'collapse';
+      }
+    },
+
+    methods: {
+      clearTimer() {
+        window.clearTimeout(window.exReSort);
+      },
+
+      reSort() {
+        const pinned = this.get('pinned');
+        const example = this.store.get('example');
+        if (pinned === 'pin' || pinned === 'collapse') {
+          window.exReSort = window.setTimeout(() => {
+            this.set({
+              examples: [example].concat(examples.filter(e => e !== example))
+            });
+          }, 500);
+        }
+      }
+    },
+  }
+</script>
